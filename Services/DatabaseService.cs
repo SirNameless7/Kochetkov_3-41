@@ -1,21 +1,25 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using KPO_Cursovoy.Models;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace KPO_Cursovoy.Services
 {
     public class DatabaseService
     {
-        private readonly AppDbContext _context;
+        private readonly IServiceProvider _serviceProvider;
 
-        public DatabaseService(AppDbContext context)
+        public DatabaseService(IServiceProvider serviceProvider)
         {
-            _context = context;
+            _serviceProvider = serviceProvider;
         }
+
         public async Task InitializeAsync()
         {
             try
             {
-                await _context.Database.EnsureCreatedAsync();
+                using var scope = _serviceProvider.CreateScope();
+                var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                await context.Database.EnsureCreatedAsync();
             }
             catch (Exception ex)
             {
@@ -25,39 +29,51 @@ namespace KPO_Cursovoy.Services
 
         public async Task<List<PcItem>> GetPcsAsync()
         {
-            return await _context.Pcs.ToListAsync();
+            using var scope = _serviceProvider.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            return await context.Pcs.ToListAsync();
         }
 
         public async Task<List<ComponentCategory>> GetComponentCategoriesAsync()
         {
-            return await _context.ComponentCategories.ToListAsync();
+            using var scope = _serviceProvider.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            return await context.ComponentCategories.ToListAsync();
         }
 
         public async Task<List<ComponentItem>> GetComponentsByCategoryAsync(string categoryCode)
         {
-            return await _context.Components
-            .Where(c => c.CategoryCode == categoryCode)
-            .ToListAsync();
+            using var scope = _serviceProvider.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            return await context.Components
+                .Where(c => c.CategoryCode == categoryCode)
+                .ToListAsync();
         }
 
         public async Task<List<Order>> GetOrdersByUserAsync(int userId)
         {
-            return await _context.Orders
-            .Where(o => o.UserId == userId)
-            .OrderByDescending(o => o.OrderDate)
-            .ToListAsync();
+            using var scope = _serviceProvider.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            return await context.Orders
+                .Where(o => o.UserId == userId)
+                .OrderByDescending(o => o.OrderDate)
+                .ToListAsync();
         }
 
         public async Task<Order> CreateOrderAsync(Order order)
         {
-            _context.Orders.Add(order);
-            await _context.SaveChangesAsync();
+            using var scope = _serviceProvider.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            context.Orders.Add(order);
+            await context.SaveChangesAsync();
             return order;
         }
 
         public async Task<List<CompatibilityRule>> GetCompatibilityRulesAsync()
         {
-            //return await _context.CompatibilityRules.ToListAsync();
+            using var scope = _serviceProvider.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            // return await context.CompatibilityRules.ToListAsync();
             return new List<CompatibilityRule>();
         }
     }

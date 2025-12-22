@@ -55,6 +55,7 @@ namespace KPO_Cursovoy
             }
         }
 
+
         private Page CreateStartPageNavigation()
         {
             var startPageViewModel = _serviceProvider.GetRequiredService<StartPageViewModel>();

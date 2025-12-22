@@ -54,19 +54,23 @@ namespace KPO_Cursovoy.ViewModels
             IsBusy = true;
             ErrorMessage = "";
 
-            var success = await _authService.LoginAsync(Phone, Password);
+            try
+            {
+                var success = await _authService.LoginAsync(Phone, Password);
 
-            if (success)
-            {
-                ErrorMessage = "Успешный вход!";
-                await _navigationService.NavigateToAsync(Routes.MainPage);
-            }
-            else
-            {
+                if (success)
+                {
+                    ErrorMessage = "Успешный вход!";
+                    await _navigationService.NavigateToAsync(Routes.MainPage);
+                    return;
+                }
+
                 ErrorMessage = "Неверный логин или пароль";
             }
-
-            IsBusy = false;
+            finally
+            {
+                IsBusy = false;
+            }
         }
 
         private async void OnRegister()
@@ -74,9 +78,6 @@ namespace KPO_Cursovoy.ViewModels
             await _navigationService.NavigateToAsync(Routes.RegisterPage);
         }
 
-        public Task InitializeAsync()
-        {
-            return Task.CompletedTask;
-        }
+        public Task InitializeAsync() => Task.CompletedTask;
     }
 }

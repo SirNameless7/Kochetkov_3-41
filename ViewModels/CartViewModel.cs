@@ -15,14 +15,17 @@ namespace KPO_Cursovoy.ViewModels
         private readonly CartService _cartService;
         private readonly INavigationService _navigationService;
         private readonly DatabaseService _databaseService;
+        public string CurrentSection => "Cart";
 
         public ObservableCollection<CartItem> Items { get; } = new();
+
         private decimal _totalPrice;
         public decimal TotalPrice
         {
             get => _totalPrice;
             set => SetProperty(ref _totalPrice, value);
         }
+
         public int TotalItemCount => Items.Sum(i => i.Quantity);
         public bool HasItems => Items.Count > 0;
 
@@ -36,8 +39,14 @@ namespace KPO_Cursovoy.ViewModels
         public ICommand IncreaseQuantityCommand => IncreaseCommand;
         public ICommand DecreaseQuantityCommand => DecreaseCommand;
         public ICommand RemoveItemCommand => RemoveCommand;
+        public ICommand NavigateToBuildPcCommand { get; }
+        public ICommand NavigateToCartCommand { get; }
+        public ICommand NavigateToOrdersCommand { get; }
+        public ICommand NavigateToProfileCommand { get; }
 
-        public CartViewModel(CartService cartService, INavigationService navigationService, DatabaseService databaseService)
+        public CartViewModel(CartService cartService,
+                             INavigationService navigationService,
+                             DatabaseService databaseService)
         {
             _cartService = cartService;
             _navigationService = navigationService;
@@ -51,6 +60,18 @@ namespace KPO_Cursovoy.ViewModels
             NavigateToCatalogCommand = new Command(OnNavigateToCatalog);
             RefreshCommand = new AsyncCommand(RefreshAsync);
 
+            NavigateToBuildPcCommand = new Command(async () =>
+                await _navigationService.NavigateToAsync(Routes.BuildPcPage));
+
+            NavigateToCartCommand = new Command(async () =>
+                await _navigationService.NavigateToAsync(Routes.CartPage));
+
+            NavigateToOrdersCommand = new Command(async () =>
+                await _navigationService.NavigateToAsync(Routes.OrdersPage));
+
+            NavigateToProfileCommand = new Command(async () =>
+                await _navigationService.NavigateToAsync(Routes.ProfilePage));
+
             LoadCart();
             _cartService.CartChanged += (s, e) => LoadCart();
         }
@@ -59,9 +80,8 @@ namespace KPO_Cursovoy.ViewModels
         {
             Items.Clear();
             foreach (var item in _cartService.Items)
-            {
                 Items.Add(item);
-            }
+
             UpdateTotal();
         }
 
@@ -116,9 +136,7 @@ namespace KPO_Cursovoy.ViewModels
         private async Task OnCheckout()
         {
             if (Items.Count == 0)
-            {
                 return;
-            }
 
             try
             {
@@ -126,9 +144,7 @@ namespace KPO_Cursovoy.ViewModels
 
                 var isAvailable = await CheckAvailabilityAsync();
                 if (!isAvailable)
-                {
                     return;
-                }
 
                 var order = await CreateOrderAsync();
                 if (order != null)
@@ -139,9 +155,6 @@ namespace KPO_Cursovoy.ViewModels
 
                     await _navigationService.NavigateToAsync(Routes.OrdersPage);
                 }
-            }
-            catch (Exception ex)
-            {
             }
             finally
             {
@@ -158,9 +171,8 @@ namespace KPO_Cursovoy.ViewModels
         {
             var currentUser = App.CurrentUser;
             if (currentUser == null)
-            {
                 return null;
-            }
+
             var order = new Order
             {
                 UserId = currentUser.UserId,
@@ -185,6 +197,7 @@ namespace KPO_Cursovoy.ViewModels
                     order.IsCustomBuild = item.IsCustomBuild;
                 }
             }
+
             try
             {
                 order = await _databaseService.CreateOrderAsync(order);
@@ -193,6 +206,7 @@ namespace KPO_Cursovoy.ViewModels
             {
                 order.Id = new Random().Next(1000, 9999);
             }
+
             return order;
         }
 
@@ -215,9 +229,6 @@ namespace KPO_Cursovoy.ViewModels
                 IsBusy = true;
                 await Task.Delay(500);
                 LoadCart();
-            }
-            catch (Exception ex)
-            {
             }
             finally
             {

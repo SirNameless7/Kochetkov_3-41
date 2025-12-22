@@ -1,4 +1,6 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using KPO_Cursovoy.Models;
 using KPO_Cursovoy.Services;
@@ -12,6 +14,7 @@ namespace KPO_Cursovoy.ViewModels
         private readonly DatabaseService _databaseService;
         private readonly INavigationService _navigationService;
         private readonly CartService _cartService;
+        public string CurrentSection => "Catalog";
 
         public ObservableCollection<PcItem> PcItems { get; } = new();
         public ObservableCollection<ComponentCategory> Categories { get; } = new();
@@ -21,8 +24,14 @@ namespace KPO_Cursovoy.ViewModels
         public ICommand BuildPcCommand { get; }
         public ICommand NavigateToCartCommand { get; }
         public ICommand AddToCartCommand { get; }
+        public ICommand NavigateToCatalogCommand { get; }
+        public ICommand NavigateToBuildPcCommand { get; }
+        public ICommand NavigateToOrdersCommand { get; }
+        public ICommand NavigateToProfileCommand { get; }
 
-        public MainPageViewModel(DatabaseService databaseService, INavigationService navigationService, CartService cartService)
+        public MainPageViewModel(DatabaseService databaseService,
+                                 INavigationService navigationService,
+                                 CartService cartService)
         {
             _databaseService = databaseService;
             _navigationService = navigationService;
@@ -33,7 +42,20 @@ namespace KPO_Cursovoy.ViewModels
             BuildPcCommand = new Command(OnBuildPc);
             NavigateToCartCommand = new Command(OnNavigateToCart);
             AddToCartCommand = new Command<PcItem>(OnAddToCart);
+
+            NavigateToCatalogCommand = new Command(async () =>
+                await _navigationService.NavigateToAsync(Routes.MainPage));
+
+            NavigateToBuildPcCommand = new Command(async () =>
+                await _navigationService.NavigateToAsync(Routes.BuildPcPage));
+
+            NavigateToOrdersCommand = new Command(async () =>
+                await _navigationService.NavigateToAsync(Routes.OrdersPage));
+
+            NavigateToProfileCommand = new Command(async () =>
+                await _navigationService.NavigateToAsync(Routes.ProfilePage));
         }
+
         private async Task LoadDataAsync()
         {
             IsBusy = true;
@@ -42,16 +64,14 @@ namespace KPO_Cursovoy.ViewModels
                 PcItems.Clear();
                 var pcs = await _databaseService.GetPcsAsync();
                 foreach (var pc in pcs)
-                {
                     PcItems.Add(pc);
-                }
+
                 await Task.Delay(100);
+
                 Categories.Clear();
                 var categories = await _databaseService.GetComponentCategoriesAsync();
                 foreach (var category in categories)
-                {
                     Categories.Add(category);
-                }
             }
             catch (Exception ex)
             {
@@ -77,12 +97,12 @@ namespace KPO_Cursovoy.ViewModels
             if (pc == null) return;
 
             var parameters = new Dictionary<string, object>
-    {
-        { "Pc", pc }
-    };
+            {
+                { "Pc", pc }
+            };
+
             await _navigationService.NavigateToAsync(Routes.PcDetailPage, parameters);
         }
-
 
         private async void OnBuildPc()
         {
@@ -104,8 +124,11 @@ namespace KPO_Cursovoy.ViewModels
                 Quantity = 1,
                 IsCustomBuild = false
             });
-            await Application.Current.MainPage.DisplayAlert("Корзина", $"{pc.Name} добавлен в корзину!", "OK");
+
+            await Application.Current.MainPage.DisplayAlert("Корзина",
+                $"{pc.Name} добавлен в корзину!", "OK");
         }
+
         public async Task InitializeAsync()
         {
             await LoadDataAsync();

@@ -1,6 +1,7 @@
 ﻿using System.Windows.Input;
 using KPO_Cursovoy.Services;
 using KPO_Cursovoy.Constants;
+using Microsoft.Maui.Controls;
 
 namespace KPO_Cursovoy.ViewModels
 {
@@ -64,27 +65,30 @@ namespace KPO_Cursovoy.ViewModels
             IsBusy = true;
             ErrorMessage = "";
 
-            var success = await _authService.RegisterAsync(Login, Phone, Password);
-
-            if (success)
+            try
             {
-                await Application.Current.MainPage.DisplayAlert(
-                    "Успех",
-                    "Регистрация успешно выполнена",
-                    "OK");
+                var success = await _authService.RegisterAsync(Login, Phone, Password);
 
-                await _navigationService.NavigateToAsync(Routes.MainPage);
-            }
-            else
-            {
+                if (success)
+                {
+                    await Application.Current.MainPage.DisplayAlert("Успех",
+                        "Регистрация успешна!", "OK");
+
+                    await _navigationService.NavigateToAsync(Routes.MainPage);
+                    return;
+                }
+
                 ErrorMessage = "Пользователь с таким логином или телефоном уже существует";
-                await Application.Current.MainPage.DisplayAlert(
-                    "Ошибка",
-                    ErrorMessage,
-                    "OK");
+                await Application.Current.MainPage.DisplayAlert("Ошибка", ErrorMessage, "OK");
             }
-
-            IsBusy = false;
+            catch (Exception ex)
+            {
+                ErrorMessage = "Ошибка регистрации: " + ex.Message;
+            }
+            finally
+            {
+                IsBusy = false;
+            }
         }
 
         private async void OnLogin()

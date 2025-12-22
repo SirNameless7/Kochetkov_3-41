@@ -1,4 +1,6 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using KPO_Cursovoy.Models;
 using KPO_Cursovoy.Services;
@@ -10,19 +12,61 @@ namespace KPO_Cursovoy.ViewModels
     {
         private readonly DatabaseService _databaseService;
         private readonly INavigationService _navigationService;
+        public string CurrentSection => "Orders";
 
         public ObservableCollection<Order> Orders { get; } = new();
+
+        public ObservableCollection<string> StatusFilterOptions { get; } = new();
+        private string? _selectedStatusFilter;
+        public string? SelectedStatusFilter
+        {
+            get => _selectedStatusFilter;
+            set
+            {
+                if (SetProperty(ref _selectedStatusFilter, value))
+                    _ = LoadOrdersAsync();
+            }
+        }
+
         public ICommand LoadOrdersCommand { get; }
         public ICommand ViewOrderDetailsCommand { get; }
         public ICommand NavigateToCatalogCommand { get; }
+        public ICommand NavigateToBuildPcCommand { get; }
+        public ICommand NavigateToCartCommand { get; }
+        public ICommand NavigateToOrdersCommand { get; }
+        public ICommand NavigateToProfileCommand { get; }
+        public ICommand PayOrderCommand { get; }
 
-        public OrderViewModel(DatabaseService databaseService, INavigationService navigationService)
+        public OrderViewModel(DatabaseService databaseService,
+                              INavigationService navigationService)
         {
             _databaseService = databaseService;
             _navigationService = navigationService;
+
             LoadOrdersCommand = new AsyncCommand(LoadOrdersAsync);
             ViewOrderDetailsCommand = new Command<Order>(OnViewOrderDetails);
             NavigateToCatalogCommand = new Command(OnNavigateToCatalog);
+
+            NavigateToBuildPcCommand = new Command(async () =>
+                await _navigationService.NavigateToAsync(Routes.BuildPcPage));
+
+            NavigateToCartCommand = new Command(async () =>
+                await _navigationService.NavigateToAsync(Routes.CartPage));
+
+            NavigateToOrdersCommand = new Command(async () =>
+                await _navigationService.NavigateToAsync(Routes.OrdersPage));
+
+            NavigateToProfileCommand = new Command(async () =>
+                await _navigationService.NavigateToAsync(Routes.ProfilePage));
+
+            PayOrderCommand = new Command<Order>(OnPayOrder);
+
+            StatusFilterOptions.Add("Все");
+            StatusFilterOptions.Add("Ожидает оплаты");
+            StatusFilterOptions.Add("В обработке");
+            StatusFilterOptions.Add("Выполнен");
+
+            SelectedStatusFilter = "Все";
         }
 
         public async Task InitializeAsync(int userId)
@@ -35,12 +79,21 @@ namespace KPO_Cursovoy.ViewModels
             try
             {
                 IsBusy = true;
+                Orders.Clear();
+
                 if (App.CurrentUser != null)
                 {
                     var orders = await _databaseService.GetOrdersByUserAsync(App.CurrentUser.UserId);
-                    Orders.Clear();
+
                     foreach (var order in orders)
                     {
+                        if (SelectedStatusFilter != null && SelectedStatusFilter != "Все")
+                        {
+                            // Примитивный фильтр по статусу по строке
+                            if (!order.Status.ToString().Contains(SelectedStatusFilter, StringComparison.OrdinalIgnoreCase))
+                                continue;
+                        }
+
                         Orders.Add(order);
                     }
                 }
@@ -62,7 +115,7 @@ namespace KPO_Cursovoy.ViewModels
                     });
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
             }
             finally
@@ -85,6 +138,12 @@ namespace KPO_Cursovoy.ViewModels
         private async void OnNavigateToCatalog()
         {
             await _navigationService.NavigateToAsync(Routes.MainPage);
+        }
+
+        private async void OnPayOrder(Order? order)
+        {
+            if (order == null) return;
+            await Task.CompletedTask;
         }
     }
 }

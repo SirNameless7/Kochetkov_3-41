@@ -1,4 +1,5 @@
-﻿using System.Windows.Input;
+﻿using System;
+using System.Windows.Input;
 using KPO_Cursovoy.Models;
 using KPO_Cursovoy.Services;
 using KPO_Cursovoy.Constants;
@@ -8,6 +9,7 @@ namespace KPO_Cursovoy.ViewModels
     public class ProfileViewModel : BaseViewModel
     {
         private readonly INavigationService _navigationService;
+        public string CurrentSection => "Profile";
 
         private string _fullName = "Гость";
         public string FullName
@@ -40,14 +42,31 @@ namespace KPO_Cursovoy.ViewModels
         public ICommand SettingsCommand { get; }
         public ICommand SupportCommand { get; }
         public ICommand LogoutCommand { get; }
+        public ICommand NavigateToCatalogCommand { get; }
+        public ICommand NavigateToBuildPcCommand { get; }
+        public ICommand NavigateToCartCommand { get; }
+        public ICommand NavigateToOrdersCommand { get; }
+        public ICommand NavigateToProfileCommand { get; }
 
         public ProfileViewModel(INavigationService navigationService)
         {
             _navigationService = navigationService;
+
             ViewOrdersCommand = new Command(OnViewOrders);
             SettingsCommand = new Command(OnSettings);
             SupportCommand = new Command(OnSupport);
             LogoutCommand = new Command(OnLogout);
+
+            NavigateToCatalogCommand = new Command(async () =>
+                await _navigationService.NavigateToAsync(Routes.MainPage));
+            NavigateToBuildPcCommand = new Command(async () =>
+                await _navigationService.NavigateToAsync(Routes.BuildPcPage));
+            NavigateToCartCommand = new Command(async () =>
+                await _navigationService.NavigateToAsync(Routes.CartPage));
+            NavigateToOrdersCommand = new Command(async () =>
+                await _navigationService.NavigateToAsync(Routes.OrdersPage));
+            NavigateToProfileCommand = new Command(async () =>
+                await _navigationService.NavigateToAsync(Routes.ProfilePage));
         }
 
         public void Initialize()
@@ -64,9 +83,8 @@ namespace KPO_Cursovoy.ViewModels
 
             var parts = fullName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
             if (parts.Length >= 2)
-            {
                 return $"{parts[0][0]}{parts[1][0]}";
-            }
+
             return parts[0].Length >= 2 ? parts[0].Substring(0, 2).ToUpper() : "?";
         }
 
@@ -77,10 +95,12 @@ namespace KPO_Cursovoy.ViewModels
 
         private async void OnSettings()
         {
+            await Task.CompletedTask;
         }
 
         private async void OnSupport()
         {
+            await Task.CompletedTask;
         }
 
         private async void OnLogout()

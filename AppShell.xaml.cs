@@ -1,6 +1,4 @@
-﻿using System;
-using System.Linq;
-using KPO_Cursovoy.Models;
+﻿using System.Linq;
 using Microsoft.Maui.Controls;
 
 namespace KPO_Cursovoy
@@ -33,50 +31,17 @@ namespace KPO_Cursovoy
 
         private async void OnNavigating(object sender, ShellNavigatingEventArgs e)
         {
-            var protectedRoutes = new[]
-            {
-                "mainpage", "buildpcpage", "cartpage", "orderspage",
-                "servicespage", "profilepage", "adminpage", "reportspage"
-            };
-
+            var protectedRoutes = new[] { "mainpage", "buildpcpage", "cartpage", "orderspage", "servicespage", "profilepage", "adminpage", "reportspage" };
             var currentRoute = e.Target.Location.OriginalString.ToLower();
+
             if (protectedRoutes.Any(route => currentRoute.Contains(route)))
             {
                 if (App.CurrentUser == null)
                 {
                     e.Cancel();
-                    await Shell.Current.GoToAsync($"//StartPage");
-                    await Shell.Current.DisplayAlert("Требуется авторизация",
-                        "Пожалуйста, войдите в систему для доступа к этой странице", "ОК");
-                    return;
+                    await Shell.Current.GoToAsync("//StartPage");
+                    await Shell.Current.DisplayAlert("Требуется авторизация", "Пожалуйста, войдите в систему", "ОК");
                 }
-
-                if ((currentRoute.Contains("adminpage") || currentRoute.Contains("reportspage")) &&
-                    App.CurrentUser.Account?.Role != "admin")
-                {
-                    e.Cancel();
-                    await Shell.Current.DisplayAlert("Доступ запрещен",
-                        "У вас нет прав для доступа к этой странице", "ОК");
-                }
-            }
-        }
-
-        public void UpdateAdminVisibility(bool isAdmin)
-        {
-            try
-            {
-                if (CurrentItem?.Items != null)
-                {
-                    var adminItem = CurrentItem.Items.FirstOrDefault(i => i.Route == "AdminPage");
-                    if (adminItem != null)
-                    {
-                        adminItem.IsVisible = isAdmin;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"UpdateAdminVisibility error: {ex.Message}");
             }
         }
     }

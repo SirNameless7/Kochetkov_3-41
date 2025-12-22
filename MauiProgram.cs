@@ -25,9 +25,9 @@ namespace KPO_Cursovoy
 #if DEBUG
             builder.Logging.AddDebug();
 #endif
-            //Менять ТУТ, ОК? Причем, Username и Password от своей бд в постгрессе
+            //Менять ТУТ. Причем, Username и Password от своей бд в постгрессе
             const string connectionString =
-                "Host=localhost;Database=App3;Username=postgres;Password=12345";
+                "Host=localhost;Database=App3;Username=postgres;Password=bognebes";
 
             builder.Services.AddDbContext<AppDbContext>(options =>
             {
@@ -54,6 +54,8 @@ namespace KPO_Cursovoy
             builder.Services.AddTransient<ProfileViewModel>();
             builder.Services.AddTransient<AdminViewModel>();
             builder.Services.AddTransient<ReportsViewModel>();
+            builder.Services.AddTransient<ProfileViewModel>();
+
 
             var app = builder.Build();
             Task.Run(async () =>

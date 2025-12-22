@@ -5,7 +5,8 @@
     xmlns:vm="clr-namespace:KPO_Cursovoy.ViewModels"
     xmlns:conv="clr-namespace:KPO_Cursovoy.Converters"
     x:Class="KPO_Cursovoy.Views.BuildPcPage"
-    Title="Собрать ПК">
+    Title="Собрать ПК"
+    BackgroundColor="#020617">
 
     <ContentPage.Resources>
         <ResourceDictionary>
@@ -14,77 +15,222 @@
         </ResourceDictionary>
     </ContentPage.Resources>
 
-    <RefreshView Command="{Binding RefreshCommand}" IsRefreshing="{Binding IsBusy}">
-        <ScrollView>
-            <VerticalStackLayout Padding="15" Spacing="15">
-                <Label Text="Конструктор ПК" FontSize="24" FontAttributes="Bold" TextColor="Black" />
-                <Label Text="Выберите компоненты для сборки ПК. Система проверит совместимость и позволит добавить сборку в корзину." TextColor="#64748B" Margin="0,0,0,15" />
-                <Frame Padding="15" BorderColor="#E2E8F0" CornerRadius="12">
-                    <VerticalStackLayout Spacing="10">
-                        <Label Text="1. Выберите категорию компонента" FontSize="18" FontAttributes="Bold" />
-                        <Picker ItemsSource="{Binding Categories}" SelectedItem="{Binding SelectedCategory}" ItemDisplayBinding="{Binding CategoryName}" Title="Категория" />
-                    </VerticalStackLayout>
-                </Frame>
-                <Frame Padding="15" BorderColor="#E2E8F0" CornerRadius="12" IsVisible="{Binding IsComponentSelectionVisible}">
-                    <VerticalStackLayout Spacing="10">
-                        <Label Text="2. Выберите компонент" FontSize="18" FontAttributes="Bold" />
+    <Grid RowDefinitions="Auto,*"
+          BackgroundColor="#020617">
+        <Grid Grid.Row="0"
+      ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,*"
+      Padding="16"
+      BackgroundColor="#020617">
 
-                        <CollectionView ItemsSource="{Binding AvailableComponents}" SelectionMode="Single">
-                            <CollectionView.ItemTemplate>
-                                <DataTemplate>
-                                    <Frame BorderColor="{Binding Source={RelativeSource AncestorType={x:Type vm:BuildPcViewModel}}, Path=CompatibilityStatus, Converter={StaticResource StatusToColorConverter}}" Padding="15" Margin="0,5" CornerRadius="10" HasShadow="True">
-                                        <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto">
-                                            <Image Source="componenticon.png" WidthRequest="60" HeightRequest="60" Aspect="AspectFit" Grid.RowSpan="4" />
-                                            <StackLayout Grid.Column="1">
-                                                <Label Text="{Binding Name}" FontSize="16" FontAttributes="Bold" />
-                                                <Label Text="{Binding CategoryName}" TextColor="#64748B" />
-                                                <Label Text="{Binding Price, StringFormat='{0:F2} ₽'}" TextColor="#10B981" FontAttributes="Bold" />
-                                                <Label Text="{Binding Stock, StringFormat='В наличии: {0} шт.'}" TextColor="{Binding Stock, Converter={StaticResource StockToColorConverter}}" />
-                                            </StackLayout>
-                                        </Grid>
-                                    </Frame>
-                                </DataTemplate>
-                            </CollectionView.ItemTemplate>
-                        </CollectionView>
+            <Button Text="Каталог"
+            Command="{Binding NavigateToCatalogCommand}"
+            BackgroundColor="#1F2933"
+            TextColor="#E5E7EB"
+            CornerRadius="10" />
 
-                        <Button Text="Добавить компонент" Command="{Binding Source={RelativeSource AncestorType={x:Type vm:BuildPcViewModel}}, Path=SelectComponentCommand}" BackgroundColor="#3B82F6" TextColor="White" CornerRadius="8" />
-                    </VerticalStackLayout>
-                </Frame>
-                <Frame Padding="15" BorderColor="#3B82F6" CornerRadius="12" Margin="0,10,0,0">
-                    <VerticalStackLayout Spacing="15">
-                        <Label Text="3. Выбранные компоненты" FontSize="18" FontAttributes="Bold" />
-                        <CollectionView ItemsSource="{Binding SelectedComponents}" SelectionMode="None">
-                            <CollectionView.ItemTemplate>
-                                <DataTemplate>
-                                    <SwipeView>
-                                        <SwipeView.RightItems>
-                                            <SwipeItems>
-                                                <SwipeItem Text="Удалить" BackgroundColor="#EF4444" Command="{Binding Source={RelativeSource AncestorType={x:Type vm:BuildPcViewModel}}, Path=RemoveComponentCommand}" CommandParameter="{Binding .}" />
-                                            </SwipeItems>
-                                        </SwipeView.RightItems>
-                                        <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto" Padding="10">
-                                            <Label Text="{Binding Name}" FontSize="16" FontAttributes="Bold" />
-                                            <Label Text="{Binding CategoryName}" Grid.Row="1" TextColor="#64748B" />
-                                            <Label Text="{Binding Price, StringFormat='{0:F2} ₽'}" Grid.Row="2" TextColor="#10B981" />
-                                        </Grid>
-                                    </SwipeView>
-                                </DataTemplate>
-                            </CollectionView.ItemTemplate>
-                        </CollectionView>
-                    </VerticalStackLayout>
-                </Frame>
-                <Frame Padding="15" BorderColor="#10B981" CornerRadius="12" Margin="0,10,0,0" BackgroundColor="#F0FDF4">
-                    <VerticalStackLayout Spacing="15">
-                        <Button Text="Проверить совместимость" Command="{Binding CheckCompatibilityCommand}" BackgroundColor="#10B981" TextColor="White" CornerRadius="12" />
-                        <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" IsVisible="{Binding IsCompatibilityResultVisible}">
-                            <Label Text="{Binding CompatibilityResult}" FontSize="16" TextColor="{Binding CompatibilityResultColor}" FontAttributes="Bold" />
-                            <Button Text="Добавить сборку в корзину" Command="{Binding AddToCartCommand}" IsEnabled="{Binding IsCompatible}" BackgroundColor="#3B82F6" TextColor="White" CornerRadius="12" Grid.Row="1" />
-                        </Grid>
-                        <Label Text="{Binding TotalPrice, StringFormat='Итого: {0:F2} ₽'}" FontSize="20" FontAttributes="Bold" TextColor="#10B981" HorizontalOptions="Center" />
-                    </VerticalStackLayout>
-                </Frame>
+            <Button Grid.Column="1"
+            Text="Собрать ПК"
+            Margin="8,0,0,0"
+            Command="{Binding NavigateToBuildPcCommand}"
+            BackgroundColor="#1F2933"
+            TextColor="#E5E7EB"
+            CornerRadius="10">
+                <Button.Triggers>
+                    <DataTrigger TargetType="Button"
+                         Binding="{Binding CurrentSection}"
+                         Value="Build">
+                        <Setter Property="IsEnabled" Value="False" />
+                        <Setter Property="BackgroundColor" Value="#2563EB" />
+                        <Setter Property="TextColor" Value="White" />
+                    </DataTrigger>
+                </Button.Triggers>
+            </Button>
 
-            </VerticalStackLayout>
-        </ScrollView>
-    </RefreshView>
+            <Button Grid.Column="2"
+            Text="Корзина"
+            Margin="8,0,0,0"
+            Command="{Binding NavigateToCartCommand}"
+            BackgroundColor="#1F2933"
+            TextColor="#E5E7EB"
+            CornerRadius="10" />
+
+            <Button Grid.Column="3"
+            Text="Заказы"
+            Margin="8,0,0,0"
+            Command="{Binding NavigateToOrdersCommand}"
+            BackgroundColor="#1F2933"
+            TextColor="#E5E7EB"
+            CornerRadius="10" />
+
+            <Button Grid.Column="4"
+            Text="Профиль"
+            Margin="8,0,0,0"
+            Command="{Binding NavigateToProfileCommand}"
+            BackgroundColor="#1F2933"
+            TextColor="#E5E7EB"
+            CornerRadius="10" />
+        </Grid>
+
+        <RefreshView Grid.Row="1"
+                     Command="{Binding RefreshCommand}"
+                     IsRefreshing="{Binding IsBusy}">
+            <ScrollView>
+                <VerticalStackLayout Padding="15" Spacing="15">
+                    <Label Text="Конструктор ПК"
+                           FontSize="24"
+                           FontAttributes="Bold"
+                           TextColor="#F9FAFB" />
+
+                    <Label Text="Выберите компоненты для сборки ПК. Система проверит совместимость и позволит добавить сборку в корзину."
+                           TextColor="#9CA3AF"
+                           Margin="0,0,0,15" />
+                    <Frame Padding="15" BorderColor="#E2E8F0" CornerRadius="12">
+                        <VerticalStackLayout Spacing="10">
+                            <Label Text="1. Выберите категорию компонента"
+                                   FontSize="18"
+                                   FontAttributes="Bold"
+                                   TextColor="#F9FAFB" />
+                            <Picker ItemsSource="{Binding Categories}"
+                                    SelectedItem="{Binding SelectedCategory}"
+                                    ItemDisplayBinding="{Binding CategoryName}"
+                                    Title="Категория" />
+                        </VerticalStackLayout>
+                    </Frame>
+                    <Frame Padding="15"
+                           BorderColor="#E2E8F0"
+                           CornerRadius="12"
+                           IsVisible="{Binding IsComponentSelectionVisible}">
+                        <VerticalStackLayout Spacing="10">
+                            <Label Text="2. Выберите компонент"
+                                   FontSize="18"
+                                   FontAttributes="Bold"
+                                   TextColor="#F9FAFB" />
+
+                            <CollectionView ItemsSource="{Binding AvailableComponents}"
+                                            SelectionMode="Single">
+                                <CollectionView.ItemTemplate>
+                                    <DataTemplate>
+                                        <Frame BorderColor="{Binding Source={RelativeSource AncestorType={x:Type vm:BuildPcViewModel}},
+                                                                     Path=CompatibilityStatus,
+                                                                     Converter={StaticResource StatusToColorConverter}}"
+                                               Padding="15"
+                                               Margin="0,5"
+                                               CornerRadius="10"
+                                               HasShadow="True"
+                                               BackgroundColor="#020617">
+                                            <Grid ColumnDefinitions="Auto,*"
+                                                  RowDefinitions="Auto,Auto,Auto,Auto">
+                                                <Image Source="componenticon.png"
+                                                       WidthRequest="60"
+                                                       HeightRequest="60"
+                                                       Aspect="AspectFit"
+                                                       Grid.RowSpan="4" />
+                                                <StackLayout Grid.Column="1">
+                                                    <Label Text="{Binding Name}"
+                                                           FontSize="16"
+                                                           FontAttributes="Bold"
+                                                           TextColor="#F9FAFB" />
+                                                    <Label Text="{Binding CategoryName}"
+                                                           TextColor="#64748B" />
+                                                    <Label Text="{Binding Price, StringFormat='{0:F2} ₽'}"
+                                                           TextColor="#10B981"
+                                                           FontAttributes="Bold" />
+                                                    <Label Text="{Binding Stock, StringFormat='В наличии: {0} шт.'}"
+                                                           TextColor="{Binding Stock, Converter={StaticResource StockToColorConverter}}" />
+                                                </StackLayout>
+                                            </Grid>
+                                        </Frame>
+                                    </DataTemplate>
+                                </CollectionView.ItemTemplate>
+                            </CollectionView>
+
+                            <Button Text="Добавить компонент"
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:BuildPcViewModel}},
+                                                      Path=SelectComponentCommand}"
+                                    BackgroundColor="#3B82F6"
+                                    TextColor="White"
+                                    CornerRadius="8" />
+                        </VerticalStackLayout>
+                    </Frame>
+                    <Frame Padding="15"
+                           BorderColor="#3B82F6"
+                           CornerRadius="12"
+                           Margin="0,10,0,0">
+                        <VerticalStackLayout Spacing="15">
+                            <Label Text="3. Выбранные компоненты"
+                                   FontSize="18"
+                                   FontAttributes="Bold"
+                                   TextColor="#F9FAFB" />
+                            <CollectionView ItemsSource="{Binding SelectedComponents}"
+                                            SelectionMode="None">
+                                <CollectionView.ItemTemplate>
+                                    <DataTemplate>
+                                        <SwipeView>
+                                            <SwipeView.RightItems>
+                                                <SwipeItems>
+                                                    <SwipeItem Text="Удалить"
+                                                               BackgroundColor="#EF4444"
+                                                               Command="{Binding Source={RelativeSource AncestorType={x:Type vm:BuildPcViewModel}},
+                                                                                 Path=RemoveComponentCommand}"
+                                                               CommandParameter="{Binding .}" />
+                                                </SwipeItems>
+                                            </SwipeView.RightItems>
+                                            <Grid ColumnDefinitions="*,Auto"
+                                                  RowDefinitions="Auto,Auto,Auto"
+                                                  Padding="10">
+                                                <Label Text="{Binding Name}"
+                                                       FontSize="16"
+                                                       FontAttributes="Bold"
+                                                       TextColor="#F9FAFB" />
+                                                <Label Text="{Binding CategoryName}"
+                                                       Grid.Row="1"
+                                                       TextColor="#64748B" />
+                                                <Label Text="{Binding Price, StringFormat='{0:F2} ₽'}"
+                                                       Grid.Row="2"
+                                                       TextColor="#10B981" />
+                                            </Grid>
+                                        </SwipeView>
+                                    </DataTemplate>
+                                </CollectionView.ItemTemplate>
+                            </CollectionView>
+                        </VerticalStackLayout>
+                    </Frame>
+                    <Frame Padding="15"
+                           BorderColor="#10B981"
+                           CornerRadius="12"
+                           Margin="0,10,0,0"
+                           BackgroundColor="#022c22">
+                        <VerticalStackLayout Spacing="15">
+                            <Button Text="Проверить совместимость"
+                                    Command="{Binding CheckCompatibilityCommand}"
+                                    BackgroundColor="#10B981"
+                                    TextColor="White"
+                                    CornerRadius="12" />
+                            <Grid ColumnDefinitions="*,Auto"
+                                  RowDefinitions="Auto,Auto"
+                                  IsVisible="{Binding IsCompatibilityResultVisible}">
+                                <Label Text="{Binding CompatibilityResult}"
+                                       FontSize="16"
+                                       TextColor="{Binding CompatibilityResultColor}"
+                                       FontAttributes="Bold" />
+                                <Button Text="Добавить сборку в корзину"
+                                        Command="{Binding AddToCartCommand}"
+                                        IsEnabled="{Binding IsCompatible}"
+                                        BackgroundColor="#3B82F6"
+                                        TextColor="White"
+                                        CornerRadius="12"
+                                        Grid.Row="1" />
+                            </Grid>
+                            <Label Text="{Binding TotalPrice, StringFormat='Итого: {0:F2} ₽'}"
+                                   FontSize="20"
+                                   FontAttributes="Bold"
+                                   TextColor="#10B981"
+                                   HorizontalOptions="Center" />
+                        </VerticalStackLayout>
+                    </Frame>
+
+                </VerticalStackLayout>
+            </ScrollView>
+        </RefreshView>
+    </Grid>
 </ContentPage>

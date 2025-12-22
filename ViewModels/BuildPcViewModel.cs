@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using KPO_Cursovoy.Models;
 using KPO_Cursovoy.Services;
+using KPO_Cursovoy.Constants;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 
@@ -16,6 +17,7 @@ namespace KPO_Cursovoy.ViewModels
         private readonly DatabaseService _databaseService;
         private readonly CartService _cartService;
         private readonly CompatibilityService _compatibilityService;
+        public string CurrentSection => "Build";
 
         public ObservableCollection<ComponentCategory> Categories { get; } = new();
         public ObservableCollection<ComponentItem> AvailableComponents { get; } = new();
@@ -30,13 +32,9 @@ namespace KPO_Cursovoy.ViewModels
                 SetProperty(ref _selectedCategory, value);
                 IsComponentSelectionVisible = value != null;
                 if (value != null)
-                {
                     LoadAvailableComponentsAsync();
-                }
                 else
-                {
                     AvailableComponents.Clear();
-                }
             }
         }
 
@@ -61,8 +59,8 @@ namespace KPO_Cursovoy.ViewModels
             set => SetProperty(ref _compatibilityResult, value);
         }
 
-        private Microsoft.Maui.Graphics.Color _compatibilityResultColor = Colors.Gray;
-        public Microsoft.Maui.Graphics.Color CompatibilityResultColor
+        private Color _compatibilityResultColor = Colors.Gray;
+        public Color CompatibilityResultColor
         {
             get => _compatibilityResultColor;
             set => SetProperty(ref _compatibilityResultColor, value);
@@ -90,6 +88,11 @@ namespace KPO_Cursovoy.ViewModels
         public ICommand CheckCompatibilityCommand { get; }
         public ICommand AddToCartCommand { get; }
         public ICommand RefreshCommand { get; }
+        public ICommand NavigateToCatalogCommand { get; }
+        public ICommand NavigateToBuildPcCommand { get; }
+        public ICommand NavigateToCartCommand { get; }
+        public ICommand NavigateToOrdersCommand { get; }
+        public ICommand NavigateToProfileCommand { get; }
 
         public BuildPcViewModel(
             INavigationService navigationService,
@@ -114,6 +117,21 @@ namespace KPO_Cursovoy.ViewModels
                 OnPropertyChanged(nameof(TotalPrice));
                 IsCompatibilityResultVisible = SelectedComponents.Count > 1;
             };
+
+            NavigateToCatalogCommand = new Command(async () =>
+                await _navigationService.NavigateToAsync(Routes.MainPage));
+
+            NavigateToBuildPcCommand = new Command(async () =>
+                await _navigationService.NavigateToAsync(Routes.BuildPcPage));
+
+            NavigateToCartCommand = new Command(async () =>
+                await _navigationService.NavigateToAsync(Routes.CartPage));
+
+            NavigateToOrdersCommand = new Command(async () =>
+                await _navigationService.NavigateToAsync(Routes.OrdersPage));
+
+            NavigateToProfileCommand = new Command(async () =>
+                await _navigationService.NavigateToAsync(Routes.ProfilePage));
         }
 
         private async Task LoadCategoriesAsync()
@@ -125,18 +143,15 @@ namespace KPO_Cursovoy.ViewModels
                 var categories = await _databaseService.GetComponentCategoriesAsync();
 
                 foreach (var category in categories)
-                {
                     Categories.Add(category);
-                }
 
                 if (Categories.Count > 0)
-                {
                     SelectedCategory = Categories.First();
-                }
             }
             catch (Exception ex)
             {
-                await Application.Current.MainPage.DisplayAlert("Ошибка", $"Не удалось загрузить категории: {ex.Message}", "ОК");
+                await Application.Current.MainPage.DisplayAlert("Ошибка",
+                    $"Не удалось загрузить категории: {ex.Message}", "ОК");
             }
             finally
             {
@@ -156,16 +171,16 @@ namespace KPO_Cursovoy.ViewModels
             {
                 IsBusy = true;
                 AvailableComponents.Clear();
-                var components = await _databaseService.GetComponentsByCategoryAsync(_selectedCategory.CategoryCode);
+                var components =
+                    await _databaseService.GetComponentsByCategoryAsync(_selectedCategory.CategoryCode);
 
                 foreach (var component in components)
-                {
                     AvailableComponents.Add(component);
-                }
             }
             catch (Exception ex)
             {
-                await Application.Current.MainPage.DisplayAlert("Ошибка", $"Не удалось загрузить компоненты: {ex.Message}", "ОК");
+                await Application.Current.MainPage.DisplayAlert("Ошибка",
+                    $"Не удалось загрузить компоненты: {ex.Message}", "ОК");
             }
             finally
             {
@@ -179,9 +194,7 @@ namespace KPO_Cursovoy.ViewModels
 
             var existing = SelectedComponents.FirstOrDefault(c => c.CategoryCode == component.CategoryCode);
             if (existing != null)
-            {
                 SelectedComponents.Remove(existing);
-            }
 
             SelectedComponents.Add(component);
             CompatibilityStatus = "Не проверено";
@@ -228,7 +241,8 @@ namespace KPO_Cursovoy.ViewModels
             }
             catch (Exception ex)
             {
-                await Application.Current.MainPage.DisplayAlert("Ошибка", $"Не удалось проверить совместимость: {ex.Message}", "ОК");
+                await Application.Current.MainPage.DisplayAlert("Ошибка",
+                    $"Не удалось проверить совместимость: {ex.Message}", "ОК");
                 CompatibilityResult = "Ошибка при проверке совместимости";
                 CompatibilityResultColor = Colors.Red;
                 CompatibilityStatus = "Ошибка";
@@ -245,13 +259,15 @@ namespace KPO_Cursovoy.ViewModels
         {
             if (!IsCompatible)
             {
-                Application.Current.MainPage.DisplayAlert("Ошибка", "Невозможно добавить в корзину: есть несовместимые компоненты", "ОК");
+                Application.Current.MainPage.DisplayAlert("Ошибка",
+                    "Невозможно добавить в корзину: есть несовместимые компоненты", "ОК");
                 return;
             }
 
             if (SelectedComponents.Count == 0)
             {
-                Application.Current.MainPage.DisplayAlert("Корзина", "Выберите компоненты для сборки ПК", "ОК");
+                Application.Current.MainPage.DisplayAlert("Корзина",
+                    "Выберите компоненты для сборки ПК", "ОК");
                 return;
             }
 
@@ -270,7 +286,8 @@ namespace KPO_Cursovoy.ViewModels
                 IsCustomBuild = true
             });
 
-            Application.Current.MainPage.DisplayAlert("Корзина", "Собранный ПК добавлен в корзину", "ОК");
+            Application.Current.MainPage.DisplayAlert("Корзина",
+                "Собранный ПК добавлен в корзину", "ОК");
         }
 
         private async Task RefreshAsync()
