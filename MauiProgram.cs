@@ -2,8 +2,11 @@
 using KPO_Cursovoy.ViewModels;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Hosting;
+using Npgsql;
 
 namespace KPO_Cursovoy
 {
@@ -22,10 +25,12 @@ namespace KPO_Cursovoy
 #if DEBUG
             builder.Logging.AddDebug();
 #endif
+            //Менять ТУТ, ОК? Причем, Username и Password от своей бд в постгрессе
+            const string connectionString =
+                "Host=localhost;Database=App3;Username=postgres;Password=12345";
 
             builder.Services.AddDbContext<AppDbContext>(options =>
             {
-                var connectionString = "Host=localhost;Database=App;Username=postgres;Password=12345";
                 options.UseNpgsql(connectionString);
             });
 
@@ -51,8 +56,6 @@ namespace KPO_Cursovoy
             builder.Services.AddTransient<ReportsViewModel>();
 
             var app = builder.Build();
-
-            // простая инициализация БД
             Task.Run(async () =>
             {
                 try
@@ -60,6 +63,19 @@ namespace KPO_Cursovoy
                     using var scope = app.Services.CreateScope();
                     var databaseService = scope.ServiceProvider.GetRequiredService<DatabaseService>();
                     await databaseService.InitializeAsync();
+                }
+                catch (NpgsqlException)
+                {
+                    await MainThread.InvokeOnMainThreadAsync(async () =>
+                    {
+                        await Application.Current.MainPage.DisplayAlert(
+                            "Ошибка БД",
+                            "Не удалось подключиться к PostgreSQL.\n\n" +
+                            "✓ Запустите сервер PostgreSQL\n" +
+                            "✓ Проверьте строку подключения выше\n" +
+                            "✓ Пароль верный?",
+                            "OK");
+                    });
                 }
                 catch (Exception ex)
                 {

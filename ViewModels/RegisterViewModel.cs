@@ -9,15 +9,15 @@ namespace KPO_Cursovoy.ViewModels
         private readonly INavigationService _navigationService;
         private readonly AuthenticationService _authService;
 
-        private string _fullName = "";
+        private string _login = "";
         private string _phone = "";
         private string _password = "";
         private string _errorMessage = "";
 
-        public string FullName
+        public string Login
         {
-            get => _fullName;
-            set => SetProperty(ref _fullName, value);
+            get => _login;
+            set => SetProperty(ref _login, value);
         }
 
         public string Phone
@@ -41,7 +41,7 @@ namespace KPO_Cursovoy.ViewModels
         public ICommand RegisterCommand { get; }
         public ICommand LoginCommand { get; }
 
-        public RegisterViewModel(INavigationService navigationService, AuthenticationService authService)  // ✅ authService!
+        public RegisterViewModel(INavigationService navigationService, AuthenticationService authService)
         {
             _navigationService = navigationService;
             _authService = authService;
@@ -52,7 +52,7 @@ namespace KPO_Cursovoy.ViewModels
 
         private async Task RegisterAsync()
         {
-            if (string.IsNullOrWhiteSpace(FullName) ||
+            if (string.IsNullOrWhiteSpace(Login) ||
                 string.IsNullOrWhiteSpace(Phone) ||
                 string.IsNullOrWhiteSpace(Password) ||
                 Phone.Length < 11)
@@ -63,16 +63,25 @@ namespace KPO_Cursovoy.ViewModels
 
             IsBusy = true;
             ErrorMessage = "";
-            var success = await _authService.RegisterAsync(Phone, Password, FullName);
+
+            var success = await _authService.RegisterAsync(Login, Phone, Password);
 
             if (success)
             {
-                ErrorMessage = "Регистрация успешна!";
+                await Application.Current.MainPage.DisplayAlert(
+                    "Успех",
+                    "Регистрация успешно выполнена",
+                    "OK");
+
                 await _navigationService.NavigateToAsync(Routes.MainPage);
             }
             else
             {
-                ErrorMessage = "Пользователь с таким телефоном уже существует";
+                ErrorMessage = "Пользователь с таким логином или телефоном уже существует";
+                await Application.Current.MainPage.DisplayAlert(
+                    "Ошибка",
+                    ErrorMessage,
+                    "OK");
             }
 
             IsBusy = false;

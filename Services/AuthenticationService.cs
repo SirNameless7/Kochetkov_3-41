@@ -52,17 +52,20 @@ namespace KPO_Cursovoy.Services
             }
         }
 
-        public async Task<bool> RegisterAsync(string phone, string password, string fullName)
+        public async Task<bool> RegisterAsync(string login, string phone, string password)
         {
             try
             {
+                if (await _context.Accounts.AnyAsync(a => a.Login == login))
+                    return false;
+
                 if (await _context.Users.AnyAsync(u => u.Phone == phone))
                     return false;
 
                 var user = new User
                 {
                     UserId = 0,
-                    FullName = fullName,
+                    FullName = "", 
                     Phone = phone,
                     LoyaltyStatus = "обычный"
                 };
@@ -74,7 +77,7 @@ namespace KPO_Cursovoy.Services
                 {
                     AccountId = 0,
                     UserId = user.UserId,
-                    Login = phone,
+                    Login = login,
                     PasswordHash = password,
                     Role = "client"
                 };

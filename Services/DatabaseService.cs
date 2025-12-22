@@ -36,16 +36,16 @@ namespace KPO_Cursovoy.Services
         public async Task<List<ComponentItem>> GetComponentsByCategoryAsync(string categoryCode)
         {
             return await _context.Components
-                .Where(c => c.CategoryCode == categoryCode)
-                .ToListAsync();
+            .Where(c => c.CategoryCode == categoryCode)
+            .ToListAsync();
         }
 
         public async Task<List<Order>> GetOrdersByUserAsync(int userId)
         {
             return await _context.Orders
-                .Where(o => o.UserId == userId)
-                .OrderByDescending(o => o.OrderDate)
-                .ToListAsync();
+            .Where(o => o.UserId == userId)
+            .OrderByDescending(o => o.OrderDate)
+            .ToListAsync();
         }
 
         public async Task<Order> CreateOrderAsync(Order order)

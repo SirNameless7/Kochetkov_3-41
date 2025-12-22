@@ -27,7 +27,7 @@
                     <Entry x:Name="PasswordEntry" 
                            Text="{Binding Password}" 
                            IsPassword="True"
-                           Placeholder="hash12345" 
+                           Placeholder="12345" 
                            TextColor="White"
                            FontSize="18"
                            Margin="0,5,0,0"/>

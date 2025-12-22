@@ -77,11 +77,12 @@ namespace KPO_Cursovoy.ViewModels
             if (pc == null) return;
 
             var parameters = new Dictionary<string, object>
-            {
-                { "Pc", pc }
-            };
+    {
+        { "Pc", pc }
+    };
             await _navigationService.NavigateToAsync(Routes.PcDetailPage, parameters);
         }
+
 
         private async void OnBuildPc()
         {

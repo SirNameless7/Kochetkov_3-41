@@ -3,7 +3,7 @@ using KPO_Cursovoy.Models;
 
 namespace KPO_Cursovoy.Services
 {
-    public class AppDbContext : DbContext
+    public class AppDbContext : DbContext 
     {
         public DbSet<User> Users { get; set; }
         public DbSet<Account> Accounts { get; set; }
@@ -74,11 +74,45 @@ namespace KPO_Cursovoy.Services
                 new ComponentItem { Id = 5, Name = "Corsair 16GB DDR4", CategoryCode = "RAM", Price = 7000, Stock = 20 },
                 new ComponentItem { Id = 6, Name = "SSD Samsung 500GB", CategoryCode = "SSD", Price = 5000, Stock = 15 }
             );
-
+            
             modelBuilder.Entity<PcItem>().HasData(
-                new PcItem { Id = 1, Name = "Игровой ПК Start", Description = "Базовый игровой компьютер", Price = 60000 },
-                new PcItem { Id = 2, Name = "Офисный ПК Lite", Description = "Компьютер для работы", Price = 35000 }
+                new PcItem
+                {
+                    Id = 1,
+                    Name = "Игровой ПК Start",
+                    Description = "Базовый игровой компьютер: i5, 16 ГБ ОЗУ, RTX 3060, SSD 500 ГБ",
+                    Price = 60000
+                },
+                new PcItem
+                {
+                    Id = 2,
+                    Name = "Офисный ПК Lite",
+                    Description = "Для работы и учёбы: Ryzen 5, 16 ГБ ОЗУ, встроенная графика, SSD 500 ГБ",
+                    Price = 35000
+                },
+                new PcItem
+                {
+                    Id = 3,
+                    Name = "Игровой ПК Pro",
+                    Description = "Для современных игр: i7, 32 ГБ ОЗУ, RTX 4070, SSD 1 ТБ",
+                    Price = 120000
+                },
+                new PcItem
+                {
+                    Id = 4,
+                    Name = "ПК для стриминга",
+                    Description = "Многопоточный процессор, 32 ГБ ОЗУ, RTX 4060 Ti, два SSD по 1 ТБ",
+                    Price = 135000
+                },
+                new PcItem
+                {
+                    Id = 5,
+                    Name = "Компактный мини‑ПК",
+                    Description = "Маленький корпус, низкий уровень шума, 16 ГБ ОЗУ, SSD 512 ГБ",
+                    Price = 45000
+                }
             );
+
 
             modelBuilder.Entity<ServiceItem>().HasData(
                 new ServiceItem { Id = 1, Name = "Чистка ПК", Description = "Удаление пыли", DurationDays = 2, Price = 2000 },

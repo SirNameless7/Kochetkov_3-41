@@ -5,6 +5,7 @@
     xmlns:vm="clr-namespace:KPO_Cursovoy.ViewModels"
     xmlns:models="clr-namespace:KPO_Cursovoy.Models"
     x:Class="KPO_Cursovoy.Views.CartPage"
+    x:Name="CartRoot"
     Title="Корзина">
 
     <Grid RowDefinitions="*,Auto">
@@ -17,13 +18,32 @@
                 SelectionMode="None">
 
                 <CollectionView.EmptyView>
-                    <VerticalStackLayout Spacing="20" Padding="30" HorizontalOptions="Center" VerticalOptions="Center">
-                        <Image Source="emptycart.png" HeightRequest="150" HorizontalOptions="Center" />
-                        <Label Text="Корзина пуста" FontSize="24" FontAttributes="Bold" HorizontalOptions="Center" />
-                        <Label Text="Перейдите в каталог, чтобы добавить товары." FontSize="16" TextColor="#64748B" HorizontalOptions="Center" />
-                        <Button Text="В каталог" Command="{Binding NavigateToCatalogCommand}" BackgroundColor="#3B82F6" TextColor="White" CornerRadius="12" WidthRequest="200" HorizontalOptions="Center" />
+                    <VerticalStackLayout Spacing="20"
+                         Padding="30"
+                         HorizontalOptions="Center"
+                         VerticalOptions="Center"
+                         BindingContext="{Binding Source={x:Reference CartRoot}}">
+                        <Image Source="emptycart.png"
+                        HeightRequest="150"
+                        HorizontalOptions="Center" />
+                        <Label Text="Корзина пуста"
+                        FontSize="24"
+                        FontAttributes="Bold"
+                        HorizontalOptions="Center" />
+                        <Label Text="Перейдите в каталог, чтобы добавить товары."
+                        FontSize="16"
+                        TextColor="#64748B"
+                        HorizontalOptions="Center" />
+                        <Button Text="В каталог"
+                        Command="{Binding NavigateToCatalogCommand}"
+                        BackgroundColor="#3B82F6"
+                        TextColor="White"
+                        CornerRadius="12"
+                        WidthRequest="200"
+                        HorizontalOptions="Center" />
                     </VerticalStackLayout>
                 </CollectionView.EmptyView>
+
 
                 <CollectionView.ItemTemplate>
                     <DataTemplate>

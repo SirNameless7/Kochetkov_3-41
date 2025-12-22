@@ -18,21 +18,20 @@
                    HorizontalOptions="Center"
                    Margin="0,0,0,20"/>
 
-            <Border Stroke="#3B82F6" 
-                    StrokeThickness="2" 
-                    BackgroundColor="#0F172A" 
-                    Padding="10" 
+            <Border Stroke="#3B82F6"
+                    StrokeThickness="2"
+                    BackgroundColor="#0F172A"
+                    Padding="10"
                     StrokeShape="RoundRectangle 12">
-                <VerticalStackLayout Spacing="10">
-                    <Label Text="Полное имя" TextColor="#9CA3AF" FontSize="14"/>
-                    <Entry Text="{Binding FullName}" 
-                           Placeholder="Иван Иванов" 
+                        <VerticalStackLayout Spacing="10">
+                           <Label Text="Логин" TextColor="#9CA3AF" FontSize="14"/>
+                           <Entry Text="{Binding Login}"
+                           Placeholder="Введите логин"
                            TextColor="White"
                            FontSize="18"
                            Margin="0,5,0,0"/>
-                </VerticalStackLayout>
+                        </VerticalStackLayout>
             </Border>
-
             <Border Stroke="#3B82F6" 
                     StrokeThickness="2" 
                     BackgroundColor="#0F172A" 

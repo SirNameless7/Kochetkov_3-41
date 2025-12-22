@@ -203,11 +203,10 @@ namespace KPO_Cursovoy.ViewModels
             TotalPrice = 0;
         }
 
-        private void OnNavigateToCatalog()
+        private async void OnNavigateToCatalog()
         {
-            _navigationService.NavigateToAsync(Routes.MainPage);
+            await _navigationService.NavigateToAsync(Routes.MainPage);
         }
-
 
         private async Task RefreshAsync()
         {
