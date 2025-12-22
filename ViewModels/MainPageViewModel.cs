@@ -16,8 +16,7 @@ namespace KPO_Cursovoy.ViewModels
         public ObservableCollection<PcItem> PcItems { get; } = new();
         public ObservableCollection<ComponentCategory> Categories { get; } = new();
 
-        public ICommand LoadPcsCommand { get; }
-        public ICommand LoadCategoriesCommand { get; }
+        public ICommand LoadDataCommand { get; }
         public ICommand SelectPcCommand { get; }
         public ICommand BuildPcCommand { get; }
         public ICommand NavigateToCartCommand { get; }
@@ -29,24 +28,29 @@ namespace KPO_Cursovoy.ViewModels
             _navigationService = navigationService;
             _cartService = cartService;
 
-            LoadPcsCommand = new AsyncCommand(LoadPcsAsync);
-            LoadCategoriesCommand = new AsyncCommand(LoadCategoriesAsync);
+            LoadDataCommand = new AsyncCommand(LoadDataAsync);
             SelectPcCommand = new Command<PcItem>(OnSelectPc);
             BuildPcCommand = new Command(OnBuildPc);
             NavigateToCartCommand = new Command(OnNavigateToCart);
             AddToCartCommand = new Command<PcItem>(OnAddToCart);
         }
-
-        private async Task LoadPcsAsync()
+        private async Task LoadDataAsync()
         {
             IsBusy = true;
             try
             {
-                var pcs = await _databaseService.GetPcsAsync();
                 PcItems.Clear();
+                var pcs = await _databaseService.GetPcsAsync();
                 foreach (var pc in pcs)
                 {
                     PcItems.Add(pc);
+                }
+                await Task.Delay(100);
+                Categories.Clear();
+                var categories = await _databaseService.GetComponentCategoriesAsync();
+                foreach (var category in categories)
+                {
+                    Categories.Add(category);
                 }
             }
             catch (Exception ex)
@@ -58,28 +62,9 @@ namespace KPO_Cursovoy.ViewModels
                     Price = 60000,
                     Description = "Базовый игровой компьютер"
                 });
-            }
-            finally
-            {
-                IsBusy = false;
-            }
-        }
-
-        private async Task LoadCategoriesAsync()
-        {
-            IsBusy = true;
-            try
-            {
-                var categories = await _databaseService.GetComponentCategoriesAsync();
-                Categories.Clear();
-                foreach (var category in categories)
-                {
-                    Categories.Add(category);
-                }
-            }
-            catch (Exception ex)
-            {
                 Categories.Add(new ComponentCategory { CategoryCode = "CPU", CategoryName = "Процессор" });
+
+                await Application.Current.MainPage.DisplayAlert("Ошибка загрузки", ex.Message, "OK");
             }
             finally
             {
@@ -108,11 +93,6 @@ namespace KPO_Cursovoy.ViewModels
             await _navigationService.NavigateToAsync(Routes.CartPage);
         }
 
-        public async Task InitializeAsync()
-        {
-            await LoadPcsAsync();
-            await LoadCategoriesAsync();
-        }
         private async void OnAddToCart(PcItem pc)
         {
             if (pc == null) return;
@@ -124,6 +104,10 @@ namespace KPO_Cursovoy.ViewModels
                 IsCustomBuild = false
             });
             await Application.Current.MainPage.DisplayAlert("Корзина", $"{pc.Name} добавлен в корзину!", "OK");
+        }
+        public async Task InitializeAsync()
+        {
+            await LoadDataAsync();
         }
     }
 }

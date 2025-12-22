@@ -5,7 +5,6 @@ using KPO_Cursovoy.Views;
 using KPO_Cursovoy.ViewModels;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
-using Microsoft.EntityFrameworkCore;
 
 namespace KPO_Cursovoy
 {
@@ -36,7 +35,7 @@ namespace KPO_Cursovoy
                     if (user != null)
                     {
                         CurrentUser = user;
-                        MainPage = new AppShell();  
+                        MainPage = new AppShell();
                     }
                     else
                     {

@@ -47,7 +47,7 @@ namespace KPO_Cursovoy.ViewModels
         {
             if (string.IsNullOrWhiteSpace(Phone) || string.IsNullOrWhiteSpace(Password))
             {
-                ErrorMessage = "Заполните телефон и пароль";
+                ErrorMessage = "Заполните логин и пароль";
                 return;
             }
 
@@ -63,7 +63,7 @@ namespace KPO_Cursovoy.ViewModels
             }
             else
             {
-                ErrorMessage = "Неверный телефон или пароль";
+                ErrorMessage = "Неверный логин или пароль";
             }
 
             IsBusy = false;

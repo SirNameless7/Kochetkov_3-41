@@ -11,6 +11,17 @@ namespace KPO_Cursovoy.Services
         {
             _context = context;
         }
+        public async Task InitializeAsync()
+        {
+            try
+            {
+                await _context.Database.EnsureCreatedAsync();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"DB Init error: {ex.Message}");
+            }
+        }
 
         public async Task<List<PcItem>> GetPcsAsync()
         {

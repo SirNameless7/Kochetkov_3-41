@@ -3,9 +3,15 @@
     public class Account
     {
         public int AccountId { get; set; }
-        public int UserId { get; set; }
+
+        public int UserId { get; set; }          // FK
+
+        public User User { get; set; } = null!;  // навигация
+
         public string Login { get; set; } = string.Empty;
+
         public string PasswordHash { get; set; } = string.Empty;
+
         public string Role { get; set; } = "client";
     }
 }

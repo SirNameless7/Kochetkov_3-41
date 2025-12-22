@@ -34,9 +34,10 @@ namespace KPO_Cursovoy.Services
             modelBuilder.Ignore<SpecificationValue>();
 
             modelBuilder.Entity<Account>()
-                .HasOne<User>()
+                .HasOne(a => a.User)
                 .WithMany()
                 .HasForeignKey(a => a.UserId);
+
 
             modelBuilder.Entity<ComponentItem>()
                 .HasOne<ComponentCategory>()
@@ -52,8 +53,9 @@ namespace KPO_Cursovoy.Services
             );
 
             modelBuilder.Entity<Account>().HasData(
-                new Account { AccountId = 1, UserId = 1, Login = "ivan", PasswordHash = "hash12345", Role = "client" },
-                new Account { AccountId = 2, UserId = 2, Login = "maria", PasswordHash = "hash54321", Role = "client" }
+               new Account { AccountId = 1, UserId = 1, Login = "ivan", PasswordHash = "12345", Role = "client" },
+               new Account { AccountId = 2, UserId = 2, Login = "maria", PasswordHash = "54321", Role = "client" }
+
             );
 
             modelBuilder.Entity<ComponentCategory>().HasData(

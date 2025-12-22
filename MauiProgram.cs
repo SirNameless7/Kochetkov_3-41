@@ -52,13 +52,14 @@ namespace KPO_Cursovoy
 
             var app = builder.Build();
 
+            // простая инициализация БД
             Task.Run(async () =>
             {
                 try
                 {
                     using var scope = app.Services.CreateScope();
-                    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                    db.Database.EnsureCreated();
+                    var databaseService = scope.ServiceProvider.GetRequiredService<DatabaseService>();
+                    await databaseService.InitializeAsync();
                 }
                 catch (Exception ex)
                 {
@@ -68,6 +69,5 @@ namespace KPO_Cursovoy
 
             return app;
         }
-
     }
 }
