@@ -1,0 +1,60 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="KPO_Cursovoy.Views.LoginPage"
+             BackgroundColor="#0F172A"
+             Title="Вход">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="30" Spacing="20" VerticalOptions="CenterAndExpand">
+            <Label Text="Вход в аккаунт" FontSize="32" TextColor="White" FontAttributes="Bold" HorizontalOptions="Center"/>
+
+            <Border Stroke="#3B82F6" StrokeThickness="2" BackgroundColor="#1E293B" Padding="10" StrokeShape="RoundRectangle 12">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Логин" TextColor="#9CA3AF" FontSize="14"/>
+                    <Entry x:Name="LoginEntry" 
+                           Text="{Binding Phone}" 
+                           Placeholder="ivan" 
+                           TextColor="White"
+                           FontSize="18"
+                           Margin="0,5,0,0"/>
+                </VerticalStackLayout>
+            </Border>
+
+            <Border Stroke="#3B82F6" StrokeThickness="2" BackgroundColor="#1E293B" Padding="10" StrokeShape="RoundRectangle 12">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Пароль" TextColor="#9CA3AF" FontSize="14"/>
+                    <Entry x:Name="PasswordEntry" 
+                           Text="{Binding Password}" 
+                           IsPassword="True"
+                           Placeholder="hash12345" 
+                           TextColor="White"
+                           FontSize="18"
+                           Margin="0,5,0,0"/>
+                </VerticalStackLayout>
+            </Border>
+
+            <Label x:Name="ErrorLabel" 
+                   Text="{Binding ErrorMessage}" 
+                   TextColor="#EF4444" 
+                   FontSize="14"
+                   HorizontalOptions="Center"/>
+
+            <Button Text="Войти" 
+                    Command="{Binding LoginCommand}"
+                    IsEnabled="{Binding IsNotBusy}"
+                    BackgroundColor="#10B981" 
+                    TextColor="White" 
+                    CornerRadius="12" 
+                    FontSize="18"
+                    HeightRequest="55"
+                    Margin="0,20,0,0"/>
+
+            <ActivityIndicator IsVisible="{Binding IsBusy}" IsRunning="{Binding IsBusy}" Color="#3B82F6"/>
+
+            <Button Text="Регистрация" Command="{Binding RegisterCommand}"
+                    BackgroundColor="Transparent" TextColor="#3B82F6" FontSize="16"/>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

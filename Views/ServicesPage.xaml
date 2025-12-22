@@ -1,0 +1,61 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:KPO_Cursovoy.ViewModels"
+             x:Class="KPO_Cursovoy.Views.ServicesPage"
+             Title="Сервисное обслуживание">
+
+    <Grid RowDefinitions="Auto,*">
+        <VerticalStackLayout Grid.Row="0" Padding="15" Spacing="10">
+            <Label Text="Сервисное обслуживание" FontSize="24" FontAttributes="Bold" TextColor="Black"/>
+            <Label Text="Выберите услуги для вашего компьютера" TextColor="#64748B"/>
+        </VerticalStackLayout>
+
+        <RefreshView Grid.Row="1" Command="{Binding LoadServicesCommand}" IsRefreshing="{Binding IsBusy}">
+            <CollectionView ItemsSource="{Binding Services}" SelectionMode="None" EmptyView="Нет доступных услуг">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Frame Padding="15" Margin="10" BorderColor="#E2E8F0" CornerRadius="12" HasShadow="True">
+                            <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto">
+                                <Image Source="service_icon.png" WidthRequest="60" HeightRequest="60" Aspect="AspectFit"/>
+
+                                <Label Text="{Binding Name}" 
+                                       FontSize="18" 
+                                       FontAttributes="Bold" 
+                                       Grid.Column="1"/>
+
+                                <Label Text="{Binding Description}" 
+                                       TextColor="#64748B" 
+                                       Grid.Column="1" 
+                                       Grid.Row="1"/>
+
+                                <Label Text="{Binding Price, StringFormat='₽{0:F2}'}" 
+                                       TextColor="#10B981" 
+                                       FontSize="18" 
+                                       FontAttributes="Bold" 
+                                       Grid.Column="1" 
+                                       Grid.Row="2"/>
+
+                                <Label Text="{Binding DurationDays, StringFormat='Срок: {0} дней'}" 
+                                       TextColor="#64748B" 
+                                       Grid.Column="1" 
+                                       Grid.Row="3"/>
+
+                                <Button Text="Выбрать" 
+                                        Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ServicesViewModel}}, Path=SelectServiceCommand}" 
+                                        CommandParameter="{Binding}"
+                                        BackgroundColor="#3B82F6" 
+                                        TextColor="White" 
+                                        CornerRadius="8" 
+                                        Grid.Column="1" 
+                                        Grid.Row="4" 
+                                        Margin="0,10,0,0"
+                                        HorizontalOptions="Start"/>
+                            </Grid>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </RefreshView>
+    </Grid>
+</ContentPage>

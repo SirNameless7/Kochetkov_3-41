@@ -1,0 +1,70 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:KPO_Cursovoy.ViewModels"
+    xmlns:models="clr-namespace:KPO_Cursovoy.Models"
+    x:Class="KPO_Cursovoy.Views.CartPage"
+    Title="Корзина">
+
+    <Grid RowDefinitions="*,Auto">
+        <RefreshView
+            Grid.Row="0"
+            Command="{Binding RefreshCommand}"
+            IsRefreshing="{Binding IsBusy}">
+            <CollectionView
+                ItemsSource="{Binding Items}"
+                SelectionMode="None">
+
+                <CollectionView.EmptyView>
+                    <VerticalStackLayout Spacing="20" Padding="30" HorizontalOptions="Center" VerticalOptions="Center">
+                        <Image Source="emptycart.png" HeightRequest="150" HorizontalOptions="Center" />
+                        <Label Text="Корзина пуста" FontSize="24" FontAttributes="Bold" HorizontalOptions="Center" />
+                        <Label Text="Перейдите в каталог, чтобы добавить товары." FontSize="16" TextColor="#64748B" HorizontalOptions="Center" />
+                        <Button Text="В каталог" Command="{Binding NavigateToCatalogCommand}" BackgroundColor="#3B82F6" TextColor="White" CornerRadius="12" WidthRequest="200" HorizontalOptions="Center" />
+                    </VerticalStackLayout>
+                </CollectionView.EmptyView>
+
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Frame Padding="15" Margin="10" BorderColor="#E2E8F0" CornerRadius="12" HasShadow="True">
+                            <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto,Auto">
+
+                                <Image Source="pcthumbnail.png" WidthRequest="80" HeightRequest="80" Aspect="AspectFit" Grid.RowSpan="3" />
+
+                                <Label Text="{Binding Pc.Name, FallbackValue='Товар'}" FontSize="18" FontAttributes="Bold" Grid.Column="1" />
+                                <Label Text="{Binding Pc.Description, FallbackValue='Описание товара'}" Grid.Column="1" Grid.Row="1" TextColor="#64748B" LineBreakMode="TailTruncation" />
+                                <Label Text="{Binding TotalPrice, StringFormat='Итого: {0:F2} ₽'}" Grid.Column="1" Grid.Row="2" TextColor="#10B981" FontAttributes="Bold" />
+
+                                <StackLayout Grid.Column="2" Grid.RowSpan="3" HorizontalOptions="End" VerticalOptions="Center" Spacing="8">
+                                    <Label Text="{Binding Quantity, StringFormat='x{0}'}" HorizontalOptions="Center" />
+                                    <Button Text="−" 
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:CartViewModel}}, Path=DecreaseQuantityCommand}" 
+                                    CommandParameter="{Binding .}" 
+                                    WidthRequest="32" HeightRequest="32" CornerRadius="16" 
+                                    BackgroundColor="#E5E7EB" TextColor="Black" />
+
+                                    <Button Text="+" 
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:CartViewModel}}, Path=IncreaseQuantityCommand}" 
+                                    CommandParameter="{Binding .}" 
+                                    WidthRequest="32" HeightRequest="32" CornerRadius="16" 
+                                    BackgroundColor="#E5E7EB" TextColor="Black" />
+
+                                    <Button Text="Удалить" 
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:CartViewModel}}, Path=RemoveItemCommand}" 
+                                    CommandParameter="{Binding .}" 
+                                    BackgroundColor="#EF4444" TextColor="White" CornerRadius="8" />
+                                </StackLayout>
+                            </Grid>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </RefreshView>
+
+        <Grid Grid.Row="1" Padding="15" BackgroundColor="White" RowDefinitions="Auto" ColumnDefinitions="*,Auto">
+            <Label Text="{Binding TotalPrice, StringFormat='Итого: {0:F2} ₽'}" FontSize="18" FontAttributes="Bold" TextColor="#10B981" VerticalOptions="Center" />
+            <Button Text="Оформить заказ" Command="{Binding CheckoutCommand}" BackgroundColor="#3B82F6" TextColor="White" CornerRadius="12" WidthRequest="180" HorizontalOptions="End" />
+        </Grid>
+    </Grid>
+</ContentPage>

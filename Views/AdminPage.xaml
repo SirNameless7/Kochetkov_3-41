@@ -1,0 +1,118 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage 
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:KPO_Cursovoy.ViewModels"
+    xmlns:conv="clr-namespace:KPO_Cursovoy.Converters"
+    x:Class="KPO_Cursovoy.Views.AdminPage"
+    Title="Админ-панель">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <conv:OrderStatusToTextConverter x:Key="OrderStatusToTextConverter" />
+            <conv:OrderStatusToTextColorConverter x:Key="OrderStatusToColorConverter" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <Grid RowDefinitions="Auto,*">
+        <HorizontalStackLayout Grid.Row="0" Padding="15" Spacing="10">
+            <Button Text="Обновить" 
+                    Command="{Binding RefreshCommand}"
+                    IsEnabled="{Binding IsNotBusy}"
+                    BackgroundColor="#3B82F6" 
+                    TextColor="White" 
+                    CornerRadius="12"
+                    WidthRequest="120"/>
+            <Button Text="Отчеты" 
+                    Command="{Binding ViewReportsCommand}"
+                    BackgroundColor="#10B981" 
+                    TextColor="White" 
+                    CornerRadius="12"
+                    WidthRequest="120"/>
+            <Button Text="Загрузки" 
+                    Command="{Binding ViewDownloadsCommand}"
+                    BackgroundColor="#9333EA" 
+                    TextColor="White" 
+                    CornerRadius="12"
+                    WidthRequest="120"/>
+        </HorizontalStackLayout>
+
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Padding="15" Spacing="20">
+                <Grid ColumnDefinitions="*,*,*" ColumnSpacing="10">
+                    <Frame Padding="15" BorderColor="#E2E8F0" CornerRadius="12" BackgroundColor="#BFDBFE">
+                        <VerticalStackLayout>
+                            <Label Text="Заказы сегодня" TextColor="#334155" FontSize="14"/>
+                            <Label Text="{Binding TodayOrdersCount}" FontSize="28" FontAttributes="Bold" TextColor="#1E3A8A" HorizontalOptions="Center"/>
+                        </VerticalStackLayout>
+                    </Frame>
+
+                    <Frame Padding="15" BorderColor="#E2E8F0" CornerRadius="12" BackgroundColor="#F0FDF4" Grid.Column="1">
+                        <VerticalStackLayout>
+                            <Label Text="Выручка" TextColor="#334155" FontSize="14"/>
+                            <Label Text="{Binding TodayRevenue, StringFormat='₽{0:F2}'}" FontSize="28" FontAttributes="Bold" TextColor="#065F46" HorizontalOptions="Center"/>
+                        </VerticalStackLayout>
+                    </Frame>
+
+                    <Frame Padding="15" BorderColor="#E2E8F0" CornerRadius="12" BackgroundColor="#FEF3C7" Grid.Column="2">
+                        <VerticalStackLayout>
+                            <Label Text="Новые клиенты" TextColor="#334155" FontSize="14"/>
+                            <Label Text="{Binding NewUsersCount}" FontSize="28" FontAttributes="Bold" TextColor="#B45309" HorizontalOptions="Center"/>
+                        </VerticalStackLayout>
+                    </Frame>
+                </Grid>
+
+                <Frame Padding="15" BorderColor="#3B82F6" CornerRadius="12">
+                    <VerticalStackLayout Spacing="15">
+                        <Label Text="Активные заказы" FontSize="18" FontAttributes="Bold"/>
+                        <CollectionView ItemsSource="{Binding ActiveOrders}" SelectionMode="Single" EmptyView="Нет активных заказов">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Frame Padding="10" Margin="0,5" BorderColor="#E2E8F0" CornerRadius="8">
+                                        <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto">
+                                            <Frame Padding="5" BackgroundColor="#BFDBFE" CornerRadius="5" HasShadow="False">
+                                                <Label Text="{Binding Id, StringFormat='#{0}'}" FontSize="16" FontAttributes="Bold" TextColor="#1E3A8A" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                            </Frame>
+
+                                            <Label Text="{Binding CustomerName, FallbackValue='Неизвестный'}" FontAttributes="Bold" Grid.Column="1"/>
+                                            <Label Text="{Binding TotalAmount, StringFormat='₽{0:F2}'}" TextColor="#10B981" FontAttributes="Bold" Grid.Column="1" Grid.Row="1"/>
+                                            <Label Text="{Binding Status, Converter={StaticResource OrderStatusToTextConverter}}" 
+                                                   TextColor="{Binding Status, Converter={StaticResource OrderStatusToColorConverter}}" 
+                                                   Grid.Column="1" Grid.Row="2"/>
+                                        </Grid>
+                                    </Frame>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </VerticalStackLayout>
+                </Frame>
+                <Frame Padding="15" BorderColor="#EF4444" CornerRadius="12" IsVisible="{Binding HasLowStockItems}">
+                    <VerticalStackLayout Spacing="15">
+                        <Label Text="Низкий остаток на складе" FontSize="18" FontAttributes="Bold" TextColor="#EF4444"/>
+                        <CollectionView ItemsSource="{Binding LowStockItems}" SelectionMode="None">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid ColumnDefinitions="*" RowDefinitions="Auto,Auto" Padding="0,5">
+                                        <Label Text="{Binding Name}" FontAttributes="Bold"/>
+                                        <Label Text="{Binding Stock, StringFormat='Остаток: {0}'}" TextColor="#EF4444" Grid.Row="1"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </VerticalStackLayout>
+                </Frame>
+                <HorizontalStackLayout Spacing="10">
+                    <Button Text="Управление компонентами" Command="{Binding ManageComponentsCommand}" BackgroundColor="#3B82F6" TextColor="White" CornerRadius="12" HorizontalOptions="FillAndExpand"/>
+                    <Button Text="Управление пользователями" Command="{Binding ManageUsersCommand}" BackgroundColor="#9333EA" TextColor="White" CornerRadius="12" HorizontalOptions="FillAndExpand"/>
+                </HorizontalStackLayout>
+
+                <HorizontalStackLayout Spacing="10">
+                    <Button Text="Аналитика" Command="{Binding AnalyticsCommand}" BackgroundColor="#10B981" TextColor="White" CornerRadius="12" HorizontalOptions="FillAndExpand"/>
+                    <Button Text="Настройки" Command="{Binding SettingsCommand}" BackgroundColor="#F59E0B" TextColor="White" CornerRadius="12" HorizontalOptions="FillAndExpand"/>
+                </HorizontalStackLayout>
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <ActivityIndicator Grid.RowSpan="2" IsVisible="{Binding IsBusy}" IsRunning="{Binding IsBusy}" Color="#3B82F6" VerticalOptions="Center" HorizontalOptions="Center"/>
+    </Grid>
+</ContentPage>

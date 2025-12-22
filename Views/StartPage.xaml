@@ -1,0 +1,60 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="KPO_Cursovoy.Views.StartPage"
+             BackgroundColor="#0F172A"
+             Title="Добро пожаловать">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="30" Spacing="25" VerticalOptions="CenterAndExpand">
+
+            <Label Text="PC Market"
+                   FontSize="42"
+                   FontAttributes="Bold"
+                   TextColor="White"
+                   HorizontalOptions="Center" />
+
+            <Label Text="Собери свой идеальный ПК с нами!"
+                   TextColor="#9CA3AF"
+                   HorizontalOptions="Center" />
+
+            <Image Source="pc_banner.png"
+                   HeightRequest="200"
+                   Aspect="AspectFit"
+                   Margin="0,20,0,20" />
+
+            <Button Text="Войти"
+                    Command="{Binding LoginCommand}"
+                    BackgroundColor="#3B82F6"
+                    TextColor="White"
+                    CornerRadius="20"
+                    FontSize="18"
+                    FontAttributes="Bold"
+                    HeightRequest="60"
+                    Margin="0,10,0,10"/>
+
+            <Button Text="Регистрация"
+                    Command="{Binding RegisterCommand}"
+                    BackgroundColor="#10B981"
+                    TextColor="White"
+                    CornerRadius="20"
+                    FontSize="18"
+                    FontAttributes="Bold"
+                    HeightRequest="60"
+                    Margin="0,10,0,10"/>
+
+            <Label Text="Или продолжите без входа для просмотра каталога"
+                   TextColor="#64748B"
+                   HorizontalOptions="Center"
+                   Margin="0,30,0,0"/>
+
+            <Button Text="Продолжить как гость"
+                    Command="{Binding ContinueAsGuestCommand}"
+                    BackgroundColor="#64748B"
+                    TextColor="White"
+                    CornerRadius="20"
+                    HeightRequest="50"/>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

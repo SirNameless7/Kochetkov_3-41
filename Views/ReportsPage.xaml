@@ -1,0 +1,87 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:KPO_Cursovoy.ViewModels"
+             x:Class="KPO_Cursovoy.Views.ReportsPage"
+             Title="Аналитика и отчеты">
+
+    <Grid RowDefinitions="Auto,*">
+        <VerticalStackLayout Grid.Row="0" Padding="15" Spacing="10">
+            <Label Text="Аналитика и отчеты" FontSize="24" FontAttributes="Bold" TextColor="Black"/>
+            <Picker ItemsSource="{Binding ReportPeriods}" SelectedItem="{Binding SelectedPeriod}" Title="Выберите период"/>
+        </VerticalStackLayout>
+
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Padding="15" Spacing="25">
+                <Frame Padding="15" BorderColor="#E2E8F0" CornerRadius="12">
+                    <VerticalStackLayout Spacing="15">
+                        <Label Text="Продажи по дням" FontSize="18" FontAttributes="Bold"/>
+                        <Image Source="sales_chart.png" Aspect="AspectFit" HeightRequest="200"/>
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                            <VerticalStackLayout>
+                                <Label Text="Максимум" TextColor="#64748B" FontSize="14"/>
+                                <Label Text="{Binding MaxSalesDay}" FontAttributes="Bold"/>
+                                <Label Text="{Binding MaxSalesAmount, StringFormat='₽{0:F2}'}" TextColor="#10B981" FontAttributes="Bold"/>
+                            </VerticalStackLayout>
+                            <VerticalStackLayout Grid.Column="1">
+                                <Label Text="Минимум" TextColor="#64748B" FontSize="14"/>
+                                <Label Text="{Binding MinSalesDay}" FontAttributes="Bold"/>
+                                <Label Text="{Binding MinSalesAmount, StringFormat='₽{0:F2}'}" TextColor="#EF4444" FontAttributes="Bold"/>
+                            </VerticalStackLayout>
+                        </Grid>
+                    </VerticalStackLayout>
+                </Frame>
+                <Frame Padding="15" BorderColor="#E2E8F0" CornerRadius="12">
+                    <VerticalStackLayout Spacing="15">
+                        <Label Text="Самые популярные компоненты" FontSize="18" FontAttributes="Bold"/>
+                        <CollectionView ItemsSource="{Binding PopularComponents}" SelectionMode="None">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid ColumnDefinitions="*" RowDefinitions="Auto,Auto" Padding="0,5">
+                                        <Label Text="{Binding Name}" FontAttributes="Bold"/>
+                                        <ProgressBar Progress="{Binding SalesPercentage}" ProgressColor="#3B82F6" Grid.Row="1" HeightRequest="8"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </VerticalStackLayout>
+                </Frame>
+                <Frame Padding="15" BorderColor="#E2E8F0" CornerRadius="12">
+                    <VerticalStackLayout Spacing="15">
+                        <Label Text="Активность пользователей" FontSize="18" FontAttributes="Bold"/>
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                            <VerticalStackLayout>
+                                <Label Text="Всего пользователей" TextColor="#64748B" FontSize="14"/>
+                                <Label Text="{Binding TotalUsers}" FontSize="28" FontAttributes="Bold" TextColor="#3B82F6" HorizontalOptions="Center"/>
+                            </VerticalStackLayout>
+                            <VerticalStackLayout Grid.Column="1">
+                                <Label Text="Активных сегодня" TextColor="#64748B" FontSize="14"/>
+                                <Label Text="{Binding ActiveUsersToday}" FontSize="28" FontAttributes="Bold" TextColor="#10B981" HorizontalOptions="Center"/>
+                            </VerticalStackLayout>
+                        </Grid>
+                    </VerticalStackLayout>
+                </Frame>
+                <Frame Padding="15" BorderColor="#3B82F6" CornerRadius="12" BackgroundColor="#BFDBFE">
+                    <VerticalStackLayout Spacing="15">
+                        <Label Text="Экспорт отчетов" FontSize="18" FontAttributes="Bold" TextColor="#1E3A8A"/>
+                        <Label Text="Выберите формат для экспорта данных" TextColor="#334155"/>
+                        <HorizontalStackLayout Spacing="10">
+                            <Button Text="Excel" 
+                                    Command="{Binding ExportToExcelCommand}"
+                                    BackgroundColor="#10B981" 
+                                    TextColor="White" 
+                                    CornerRadius="12"
+                                    HorizontalOptions="FillAndExpand"/>
+                            <Button Text="PDF" 
+                                    Command="{Binding ExportToPdfCommand}"
+                                    BackgroundColor="#EF4444" 
+                                    TextColor="White" 
+                                    CornerRadius="12"
+                                    HorizontalOptions="FillAndExpand"/>
+                        </HorizontalStackLayout>
+                    </VerticalStackLayout>
+                </Frame>
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

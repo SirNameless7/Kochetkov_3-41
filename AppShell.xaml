@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+       xmlns:views="clr-namespace:KPO_Cursovoy.Views"
+       x:Class="KPO_Cursovoy.AppShell"
+       Shell.FlyoutBehavior="Flyout"
+       FlyoutBackgroundColor="#1E293B"
+       Title="PC Market">
+
+    <Shell.FlyoutHeader>
+        <Grid BackgroundColor="#0F172A" HeightRequest="150">
+            <Label Text="PC Market" 
+                   FontSize="28" 
+                   TextColor="White" 
+                   VerticalOptions="Center" 
+                   HorizontalOptions="Center"
+                   FontAttributes="Bold"/>
+            <Image Source="pc_icon.png" 
+                   HeightRequest="80" 
+                   HorizontalOptions="Center" 
+                   VerticalOptions="Center"/>
+        </Grid>
+    </Shell.FlyoutHeader>
+
+    <ShellContent Route="StartPage" ContentTemplate="{DataTemplate views:StartPage}" />
+    <ShellContent Route="LoginPage" ContentTemplate="{DataTemplate views:LoginPage}" />
+    <ShellContent Route="RegisterPage" ContentTemplate="{DataTemplate views:RegisterPage}" />
+
+    <TabBar>
+        <ShellContent Route="MainPage" 
+                      Title="Каталог" 
+                      Icon="home.png" 
+                      ContentTemplate="{DataTemplate views:MainPage}"/>
+        <ShellContent Route="BuildPcPage" 
+                      Title="Собрать ПК" 
+                      Icon="build.png" 
+                      ContentTemplate="{DataTemplate views:BuildPcPage}"/>
+        <ShellContent Route="CartPage" 
+                      Title="Корзина" 
+                      Icon="cart.png" 
+                      ContentTemplate="{DataTemplate views:CartPage}"/>
+        <ShellContent Route="OrdersPage" 
+                      Title="Мои заказы" 
+                      Icon="orders.png" 
+                      ContentTemplate="{DataTemplate views:OrdersPage}"/>
+        <ShellContent Route="ServicesPage" 
+                      Title="Сервис" 
+                      Icon="service.png" 
+                      ContentTemplate="{DataTemplate views:ServicesPage}"/>
+    </TabBar>
+
+     <ShellContent Route="PcDetailPage" 
+                  ContentTemplate="{DataTemplate views:PcDetailPage}"/>
+    <ShellContent Route="OrderDetailPage" 
+                  ContentTemplate="{DataTemplate views:OrderDetailPage}"/>
+    <ShellContent Route="ProfilePage" 
+                  Title="Профиль" 
+                  Icon="profile.png" 
+                  ContentTemplate="{DataTemplate views:ProfilePage}"/>
+
+    <ShellContent x:Name="AdminTab" 
+                  Route="AdminPage" 
+                  Title="Админка" 
+                  Icon="admin.png" 
+                  IsVisible="False"
+                  ContentTemplate="{DataTemplate views:AdminPage}"/>
+    <ShellContent Route="ReportsPage" 
+                  ContentTemplate="{DataTemplate views:ReportsPage}"/>
+</Shell>
