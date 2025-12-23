@@ -55,27 +55,40 @@ namespace KPO_Cursovoy.ViewModels
             try
             {
                 IsBusy = true;
-                Order = new Order
-                {
-                    Id = orderId,
-                    TotalAmount = 125000,
-                    OrderDate = DateTime.Now.AddDays(-2),
-                    Status = OrderStatus.Processing
-                };
 
-                OrderItems.Add(new OrderComponent
+                var orders = await _databaseService.GetOrdersByUserAsync(App.CurrentUser.UserId);
+
+                Order = orders.FirstOrDefault(o => o.Id == orderId) ?? new Order { Id = orderId };
+
+                OrderItems.Clear();
+                foreach (var oc in Order.Components)
                 {
-                    Component = new ComponentItem { Name = "Intel Core i7-13700K", Price = 45000 },
-                    Quantity = 1
-                });
-                OrderItems.Add(new OrderComponent
+                    OrderItems.Add(oc);
+                }
+
+                Services.Clear();
+                foreach (var os in Order.Services)
                 {
-                    Component = new ComponentItem { Name = "NVIDIA RTX 4080", Price = 80000 },
-                    Quantity = 1
-                });
-            }
-            catch (Exception ex)
-            {
+                    Services.Add(os);
+                }
+
+                StatusHistory.Clear();
+                var allStatuses = Enum.GetValues(typeof(OrderStatus)).Cast<OrderStatus>();
+                foreach (var status in allStatuses)
+                {
+                    if (status <= Order.Status)
+                    {
+                        StatusHistory.Add(new StatusHistoryItem
+                        {
+                            StatusText = status.ToString(),
+                            StatusColor = status == Order.Status ? Colors.Blue : Colors.Gray,
+                            Timestamp = Order.OrderDate.AddHours((int)status * 5) 
+                        });
+                    }
+                }
+
+                Order.TotalAmount = Order.Components.Sum(c => c.Component.Price * c.Quantity)
+                                    + Order.Services.Sum(s => s.Service.Price);
             }
             finally
             {
@@ -91,9 +104,6 @@ namespace KPO_Cursovoy.ViewModels
                 Order.Status = OrderStatus.Paid;
                 await _navigationService.GoBackAsync();
             }
-            catch (Exception ex)
-            {
-            }
             finally
             {
                 IsBusy = false;
@@ -107,9 +117,6 @@ namespace KPO_Cursovoy.ViewModels
                 IsBusy = true;
                 Order.Status = OrderStatus.Cancelled;
                 await _navigationService.GoBackAsync();
-            }
-            catch (Exception ex)
-            {
             }
             finally
             {

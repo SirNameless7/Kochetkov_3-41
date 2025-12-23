@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using KPO_Cursovoy.Models;
@@ -89,34 +90,19 @@ namespace KPO_Cursovoy.ViewModels
                     {
                         if (SelectedStatusFilter != null && SelectedStatusFilter != "Все")
                         {
-                            // Примитивный фильтр по статусу по строке
                             if (!order.Status.ToString().Contains(SelectedStatusFilter, StringComparison.OrdinalIgnoreCase))
                                 continue;
                         }
 
+                        Console.WriteLine($"DEBUG VM LOAD: Id={order.Id}, Total={order.TotalAmount}");
+
                         Orders.Add(order);
                     }
                 }
-                else
-                {
-                    Orders.Add(new Order
-                    {
-                        Id = 1001,
-                        TotalAmount = 125000,
-                        OrderDate = DateTime.Now.AddDays(-2),
-                        Status = OrderStatus.Processing
-                    });
-                    Orders.Add(new Order
-                    {
-                        Id = 1002,
-                        TotalAmount = 85000,
-                        OrderDate = DateTime.Now.AddDays(-5),
-                        Status = OrderStatus.Completed
-                    });
-                }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Console.WriteLine($"DEBUG VM LOAD ERROR: {ex}");
             }
             finally
             {
@@ -128,10 +114,13 @@ namespace KPO_Cursovoy.ViewModels
         {
             if (order == null) return;
 
+            Console.WriteLine($"DEBUG VM DETAILS: order.Id={order.Id}, Total={order.TotalAmount}");
+
             var parameters = new Dictionary<string, object>
             {
                 { "OrderId", order.Id }
             };
+
             await _navigationService.NavigateToAsync(Routes.OrderDetailPage, parameters);
         }
 

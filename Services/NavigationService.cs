@@ -49,7 +49,7 @@ namespace KPO_Cursovoy.Services
                 "OrdersPage" => CreatePage<OrdersPage, OrderViewModel>(),
                 "ServicesPage" => CreatePage<ServicesPage, ServicesViewModel>(),
                 "PcDetailPage" => CreatePcDetailPage(parameter),
-                "OrderDetailPage" => CreatePage<OrderDetailPage, OrderDetailViewModel>(),
+                "OrderDetailPage" => CreateOrderDetailPage(parameter),
                 "ProfilePage" => CreatePage<ProfilePage, ProfileViewModel>(),
                 "AdminPage" => CreatePage<AdminPage, AdminViewModel>(),
                 "ReportsPage" => CreatePage<ReportsPage, ReportsViewModel>(),
@@ -61,6 +61,28 @@ namespace KPO_Cursovoy.Services
             else
                 Application.Current.MainPage = new NavigationPage(page);
         }
+        private OrderDetailPage CreateOrderDetailPage(object parameter)
+        {
+            var vm = _serviceProvider.GetRequiredService<OrderDetailViewModel>();
+
+            int orderId = 0;
+
+            if (parameter is Dictionary<string, object> dict &&
+                dict.TryGetValue("OrderId", out var idObj))
+            {
+                if (idObj is int id)
+                    orderId = id;
+                else if (idObj is long longId)
+                    orderId = (int)longId;
+                else if (idObj is string s && int.TryParse(s, out var parsed))
+                    orderId = parsed;
+            }
+
+            return new OrderDetailPage(vm, orderId);
+        }
+
+
+
 
         private TPage CreatePage<TPage, TViewModel>()
             where TPage : ContentPage

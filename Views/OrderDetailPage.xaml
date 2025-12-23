@@ -7,6 +7,7 @@
 
     <ScrollView>
         <VerticalStackLayout Padding="15" Spacing="20">
+            <!-- Основная информация о заказе -->
             <Frame Padding="15" BackgroundColor="#BFDBFE" BorderColor="#3B82F6" CornerRadius="12">
                 <Grid ColumnDefinitions="*" RowDefinitions="Auto,Auto,Auto,Auto">
                     <Label Text="{Binding Order.Id, StringFormat='Заказ №{0}'}" 
@@ -29,22 +30,30 @@
                            Margin="0,10,0,0"/>
                 </Grid>
             </Frame>
+
+            <!-- Состав заказа -->
             <Frame Padding="15" BorderColor="#E2E8F0" CornerRadius="12">
                 <VerticalStackLayout Spacing="10">
-                    <Label Text="Состав заказа" FontSize="18" FontAttributes="Bold"/>
+                    <Label Text="Состав заказа" FontSize="18" FontAttributes="Bold" />
                     <CollectionView ItemsSource="{Binding OrderItems}" SelectionMode="None">
                         <CollectionView.ItemTemplate>
                             <DataTemplate>
                                 <Grid ColumnDefinitions="*" RowDefinitions="Auto,Auto,Auto" Padding="0,10">
-                                    <Label Text="{Binding Name}" FontSize="16" FontAttributes="Bold"/>
-                                    <Label Text="{Binding Description}" TextColor="#64748B" Grid.Row="1"/>
-                                    <Label Text="{Binding PriceWithQuantity}" TextColor="#10B981" FontAttributes="Bold" Grid.Row="2"/>
+                                    <Label Text="{Binding Component.Name}" 
+                               FontSize="16" FontAttributes="Bold" />
+                                    <Label Text="{Binding Component.CategoryCode}" 
+                               TextColor="#64748B" Grid.Row="1" />
+                                    <Label Text="{Binding Component.Price, StringFormat='₽{0:F2}'}"
+                               TextColor="#10B981" FontAttributes="Bold" Grid.Row="2" />
                                 </Grid>
                             </DataTemplate>
                         </CollectionView.ItemTemplate>
                     </CollectionView>
                 </VerticalStackLayout>
             </Frame>
+
+
+            <!-- Дополнительные услуги -->
             <Frame Padding="15" BorderColor="#E2E8F0" CornerRadius="12" IsVisible="{Binding HasServices}">
                 <VerticalStackLayout Spacing="10">
                     <Label Text="Дополнительные услуги" FontSize="18" FontAttributes="Bold"/>
@@ -52,15 +61,20 @@
                         <CollectionView.ItemTemplate>
                             <DataTemplate>
                                 <Grid ColumnDefinitions="*" RowDefinitions="Auto,Auto,Auto" Padding="0,10">
-                                    <Label Text="{Binding Name}" FontSize="16" FontAttributes="Bold"/>
-                                    <Label Text="{Binding Description}" TextColor="#64748B" Grid.Row="1"/>
-                                    <Label Text="{Binding Price, StringFormat='₽{0:F2}'}" TextColor="#10B981" FontAttributes="Bold" Grid.Row="2"/>
+                                    <Label Text="{Binding Service.Name}" FontSize="16" FontAttributes="Bold"/>
+                                    <Label Text="{Binding Service.Description}" TextColor="#64748B" Grid.Row="1"/>
+                                    <Label Text="{Binding Service.Price, StringFormat='₽{0:F2}'}" 
+                                           TextColor="#10B981"
+                                           FontAttributes="Bold"
+                                           Grid.Row="2"/>
                                 </Grid>
                             </DataTemplate>
                         </CollectionView.ItemTemplate>
                     </CollectionView>
                 </VerticalStackLayout>
             </Frame>
+
+            <!-- Оплата -->
             <Frame Padding="15" BackgroundColor="#F0FDF4" BorderColor="#10B981" CornerRadius="12" IsVisible="{Binding IsPaymentSectionVisible}">
                 <VerticalStackLayout Spacing="15">
                     <Label Text="Оплата" FontSize="18" FontAttributes="Bold" TextColor="#065F46"/>
@@ -76,6 +90,8 @@
                             Margin="0,10,0,0"/>
                 </VerticalStackLayout>
             </Frame>
+
+            <!-- История статусов -->
             <Frame Padding="15" BorderColor="#E2E8F0" CornerRadius="12">
                 <VerticalStackLayout Spacing="15">
                     <Label Text="История статусов" FontSize="18" FontAttributes="Bold"/>
@@ -94,6 +110,8 @@
                     </CollectionView>
                 </VerticalStackLayout>
             </Frame>
+
+            <!-- Кнопки -->
             <HorizontalStackLayout Spacing="10" Margin="0,10,0,0">
                 <Button Text="Отменить заказ" 
                         Command="{Binding CancelOrderCommand}"

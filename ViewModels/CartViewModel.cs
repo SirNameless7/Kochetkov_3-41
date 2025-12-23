@@ -141,12 +141,36 @@ namespace KPO_Cursovoy.ViewModels
             try
             {
                 IsBusy = true;
+                var usedComponents = new List<ComponentItem>();
+                foreach (var item in Items)
+                {
+                    if (item.Component != null)
+                    {
+                        for (int i = 0; i < item.Quantity; i++)
+                            usedComponents.Add(item.Component);
+                    }
+                    else if (item.Pc != null && item.IsCustomBuild && item.Pc.Components != null)
+                    {
+                        foreach (var comp in item.Pc.Components)
+                            usedComponents.Add(comp);
+                    }
+                }
 
-                var isAvailable = await CheckAvailabilityAsync();
-                if (!isAvailable)
-                    return;
+                // Проверка наличия компонентов
+                foreach (var comp in usedComponents)
+                {
+                    if (comp.Stock < 1)
+                    {
+                        await Application.Current.MainPage.DisplayAlert(
+                            "Ошибка",
+                            $"Компонент {comp.Name} закончился на складе",
+                            "ОК");
+                        return;
+                    }
+                }
 
-                var order = await CreateOrderAsync();
+                // Создаём заказ и списываем компоненты
+                var order = await CreateOrderAsync(usedComponents);
                 if (order != null)
                 {
                     _cartService.Clear();
@@ -162,12 +186,7 @@ namespace KPO_Cursovoy.ViewModels
             }
         }
 
-        private async Task<bool> CheckAvailabilityAsync()
-        {
-            return true;
-        }
-
-        private async Task<Order?> CreateOrderAsync()
+        private async Task<Order?> CreateOrderAsync(List<ComponentItem> usedComponents)
         {
             var currentUser = App.CurrentUser;
             if (currentUser == null)
@@ -177,9 +196,10 @@ namespace KPO_Cursovoy.ViewModels
             {
                 UserId = currentUser.UserId,
                 TotalAmount = TotalPrice,
-                OrderDate = DateTime.Now,
+                OrderDate = DateTime.UtcNow,
                 Status = OrderStatus.WaitingPayment
             };
+
 
             foreach (var item in Items)
             {
@@ -193,18 +213,39 @@ namespace KPO_Cursovoy.ViewModels
                 }
                 else if (item.Pc != null)
                 {
-                    order.PcId = item.Pc.Id;
-                    order.IsCustomBuild = item.IsCustomBuild;
+                    if (item.IsCustomBuild && item.Pc.Components != null)
+                    {
+                        foreach (var comp in item.Pc.Components)
+                        {
+                            order.Components.Add(new OrderComponent
+                            {
+                                ComponentId = comp.Id,
+                                Quantity = 1
+                            });
+                        }
+                        order.IsCustomBuild = true;
+                    }
+                    else
+                    {
+                        order.PcId = item.Pc.Id;
+                    }
                 }
             }
 
             try
             {
-                order = await _databaseService.CreateOrderAsync(order);
+                foreach (var comp in usedComponents)
+                {
+                    comp.Stock--;
+                }
+
+                order = await _databaseService.CreateOrderAsync(order, usedComponents);
+
             }
-            catch
+            catch (Exception ex)
             {
-                order.Id = new Random().Next(1000, 9999);
+                await Application.Current.MainPage.DisplayAlert("Ошибка", ex.Message, "ОК");
+                return null;
             }
 
             return order;

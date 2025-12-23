@@ -10,14 +10,14 @@ public partial class BuildPcPage : ContentPage
     public BuildPcPage(BuildPcViewModel viewModel)
     {
         InitializeComponent();
-        BindingContext = viewModel;
         ViewModel = viewModel;
+        BindingContext = ViewModel;
     }
 
-    protected override void OnAppearing()
+    protected override async void OnAppearing()
     {
         base.OnAppearing();
-        ViewModel?.InitializeAsync();
+        await ViewModel.InitializeAsync();
     }
-
 }
+

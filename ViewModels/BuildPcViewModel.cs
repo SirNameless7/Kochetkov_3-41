@@ -17,6 +17,7 @@ namespace KPO_Cursovoy.ViewModels
         private readonly DatabaseService _databaseService;
         private readonly CartService _cartService;
         private readonly CompatibilityService _compatibilityService;
+
         public string CurrentSection => "Build";
 
         public ObservableCollection<ComponentCategory> Categories { get; } = new();
@@ -32,10 +33,17 @@ namespace KPO_Cursovoy.ViewModels
                 SetProperty(ref _selectedCategory, value);
                 IsComponentSelectionVisible = value != null;
                 if (value != null)
-                    LoadAvailableComponentsAsync();
+                    _ = LoadAvailableComponentsAsync();
                 else
                     AvailableComponents.Clear();
             }
+        }
+
+        private ComponentItem? _selectedAvailableComponent;
+        public ComponentItem? SelectedAvailableComponent
+        {
+            get => _selectedAvailableComponent;
+            set => SetProperty(ref _selectedAvailableComponent, value);
         }
 
         private bool _isComponentSelectionVisible;
@@ -120,38 +128,37 @@ namespace KPO_Cursovoy.ViewModels
 
             NavigateToCatalogCommand = new Command(async () =>
                 await _navigationService.NavigateToAsync(Routes.MainPage));
-
             NavigateToBuildPcCommand = new Command(async () =>
                 await _navigationService.NavigateToAsync(Routes.BuildPcPage));
-
             NavigateToCartCommand = new Command(async () =>
                 await _navigationService.NavigateToAsync(Routes.CartPage));
-
             NavigateToOrdersCommand = new Command(async () =>
                 await _navigationService.NavigateToAsync(Routes.OrdersPage));
-
             NavigateToProfileCommand = new Command(async () =>
                 await _navigationService.NavigateToAsync(Routes.ProfilePage));
         }
 
+        private bool _categoriesLoaded;
+
         private async Task LoadCategoriesAsync()
         {
+            if (_categoriesLoaded)
+                return;
+
             try
             {
                 IsBusy = true;
                 Categories.Clear();
+
                 var categories = await _databaseService.GetComponentCategoriesAsync();
 
-                foreach (var category in categories)
+                foreach (var category in categories
+                             .GroupBy(c => c.CategoryCode)
+                             .Select(g => g.First()))
+                {
                     Categories.Add(category);
-
-                if (Categories.Count > 0)
-                    SelectedCategory = Categories.First();
-            }
-            catch (Exception ex)
-            {
-                await Application.Current.MainPage.DisplayAlert("Ошибка",
-                    $"Не удалось загрузить категории: {ex.Message}", "ОК");
+                }
+                _categoriesLoaded = true;
             }
             finally
             {
@@ -161,7 +168,7 @@ namespace KPO_Cursovoy.ViewModels
 
         private async Task LoadAvailableComponentsAsync()
         {
-            if (_selectedCategory == null)
+            if (_selectedCategory == null || string.IsNullOrWhiteSpace(_selectedCategory.CategoryCode))
             {
                 AvailableComponents.Clear();
                 return;
@@ -171,16 +178,19 @@ namespace KPO_Cursovoy.ViewModels
             {
                 IsBusy = true;
                 AvailableComponents.Clear();
-                var components =
-                    await _databaseService.GetComponentsByCategoryAsync(_selectedCategory.CategoryCode);
+
+                var components = await _databaseService
+                    .GetComponentsByCategoryAsync(_selectedCategory.CategoryCode);
 
                 foreach (var component in components)
                     AvailableComponents.Add(component);
             }
             catch (Exception ex)
             {
-                await Application.Current.MainPage.DisplayAlert("Ошибка",
-                    $"Не удалось загрузить компоненты: {ex.Message}", "ОК");
+                await Application.Current.MainPage.DisplayAlert(
+                    "Ошибка",
+                    $"Не удалось загрузить компоненты для категории '{_selectedCategory?.CategoryCode ?? "null"}': {ex.Message}",
+                    "ОК");
             }
             finally
             {
@@ -198,6 +208,9 @@ namespace KPO_Cursovoy.ViewModels
 
             SelectedComponents.Add(component);
             CompatibilityStatus = "Не проверено";
+
+            // Сброс выбранного компонента для повторного выбора
+            SelectedAvailableComponent = null;
         }
 
         private void RemoveComponent(ComponentItem component)
@@ -279,16 +292,19 @@ namespace KPO_Cursovoy.ViewModels
                 Components = new List<ComponentItem>(SelectedComponents)
             };
 
-            _cartService.AddItem(new CartItem
+            var cartItem = new CartItem
             {
                 Pc = customPc,
                 Quantity = 1,
                 IsCustomBuild = true
-            });
+            };
+
+            _cartService.AddItem(cartItem);
 
             Application.Current.MainPage.DisplayAlert("Корзина",
                 "Собранный ПК добавлен в корзину", "ОК");
         }
+
 
         private async Task RefreshAsync()
         {

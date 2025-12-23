@@ -5,19 +5,23 @@ namespace KPO_Cursovoy.Views
 {
     public partial class OrderDetailPage : ContentPage
     {
-        public OrderDetailViewModel ViewModel { get; }
+        private readonly int _orderId;
 
-        public OrderDetailPage(OrderDetailViewModel viewModel)
+        public OrderDetailPage(OrderDetailViewModel vm, int orderId)
         {
             InitializeComponent();
-            ViewModel = viewModel;
-            BindingContext = ViewModel;
+            BindingContext = vm;
+            _orderId = orderId;
         }
 
-        protected override void OnAppearing()
+        protected override async void OnAppearing()
         {
             base.OnAppearing();
-            _ = ViewModel?.InitializeAsync(1001);
+
+            if (_orderId > 0)
+                await ((OrderDetailViewModel)BindingContext).InitializeAsync(_orderId);
         }
     }
+
+
 }

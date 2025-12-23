@@ -17,28 +17,29 @@
 
     <Grid RowDefinitions="Auto,*"
           BackgroundColor="#020617">
+        <!-- Навигационные кнопки -->
         <Grid Grid.Row="0"
-      ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,*"
-      Padding="16"
-      BackgroundColor="#020617">
+              ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,*"
+              Padding="16"
+              BackgroundColor="#020617">
 
             <Button Text="Каталог"
-            Command="{Binding NavigateToCatalogCommand}"
-            BackgroundColor="#1F2933"
-            TextColor="#E5E7EB"
-            CornerRadius="10" />
+                    Command="{Binding NavigateToCatalogCommand}"
+                    BackgroundColor="#1F2933"
+                    TextColor="#E5E7EB"
+                    CornerRadius="10" />
 
             <Button Grid.Column="1"
-            Text="Собрать ПК"
-            Margin="8,0,0,0"
-            Command="{Binding NavigateToBuildPcCommand}"
-            BackgroundColor="#1F2933"
-            TextColor="#E5E7EB"
-            CornerRadius="10">
+                    Text="Собрать ПК"
+                    Margin="8,0,0,0"
+                    Command="{Binding NavigateToBuildPcCommand}"
+                    BackgroundColor="#1F2933"
+                    TextColor="#E5E7EB"
+                    CornerRadius="10">
                 <Button.Triggers>
                     <DataTrigger TargetType="Button"
-                         Binding="{Binding CurrentSection}"
-                         Value="Build">
+                                 Binding="{Binding CurrentSection}"
+                                 Value="Build">
                         <Setter Property="IsEnabled" Value="False" />
                         <Setter Property="BackgroundColor" Value="#2563EB" />
                         <Setter Property="TextColor" Value="White" />
@@ -47,35 +48,37 @@
             </Button>
 
             <Button Grid.Column="2"
-            Text="Корзина"
-            Margin="8,0,0,0"
-            Command="{Binding NavigateToCartCommand}"
-            BackgroundColor="#1F2933"
-            TextColor="#E5E7EB"
-            CornerRadius="10" />
+                    Text="Корзина"
+                    Margin="8,0,0,0"
+                    Command="{Binding NavigateToCartCommand}"
+                    BackgroundColor="#1F2933"
+                    TextColor="#E5E7EB"
+                    CornerRadius="10" />
 
             <Button Grid.Column="3"
-            Text="Заказы"
-            Margin="8,0,0,0"
-            Command="{Binding NavigateToOrdersCommand}"
-            BackgroundColor="#1F2933"
-            TextColor="#E5E7EB"
-            CornerRadius="10" />
+                    Text="Заказы"
+                    Margin="8,0,0,0"
+                    Command="{Binding NavigateToOrdersCommand}"
+                    BackgroundColor="#1F2933"
+                    TextColor="#E5E7EB"
+                    CornerRadius="10" />
 
             <Button Grid.Column="4"
-            Text="Профиль"
-            Margin="8,0,0,0"
-            Command="{Binding NavigateToProfileCommand}"
-            BackgroundColor="#1F2933"
-            TextColor="#E5E7EB"
-            CornerRadius="10" />
+                    Text="Профиль"
+                    Margin="8,0,0,0"
+                    Command="{Binding NavigateToProfileCommand}"
+                    BackgroundColor="#1F2933"
+                    TextColor="#E5E7EB"
+                    CornerRadius="10" />
         </Grid>
 
+        <!-- Основной контент -->
         <RefreshView Grid.Row="1"
                      Command="{Binding RefreshCommand}"
                      IsRefreshing="{Binding IsBusy}">
             <ScrollView>
                 <VerticalStackLayout Padding="15" Spacing="15">
+
                     <Label Text="Конструктор ПК"
                            FontSize="24"
                            FontAttributes="Bold"
@@ -84,6 +87,8 @@
                     <Label Text="Выберите компоненты для сборки ПК. Система проверит совместимость и позволит добавить сборку в корзину."
                            TextColor="#9CA3AF"
                            Margin="0,0,0,15" />
+
+                    <!-- Выбор категории -->
                     <Frame Padding="15" BorderColor="#E2E8F0" CornerRadius="12">
                         <VerticalStackLayout Spacing="10">
                             <Label Text="1. Выберите категорию компонента"
@@ -91,11 +96,13 @@
                                    FontAttributes="Bold"
                                    TextColor="#F9FAFB" />
                             <Picker ItemsSource="{Binding Categories}"
-                                    SelectedItem="{Binding SelectedCategory}"
+                                    SelectedItem="{Binding SelectedCategory, Mode=TwoWay}"
                                     ItemDisplayBinding="{Binding CategoryName}"
                                     Title="Категория" />
                         </VerticalStackLayout>
                     </Frame>
+
+                    <!-- Выбор компонента -->
                     <Frame Padding="15"
                            BorderColor="#E2E8F0"
                            CornerRadius="12"
@@ -107,16 +114,14 @@
                                    TextColor="#F9FAFB" />
 
                             <CollectionView ItemsSource="{Binding AvailableComponents}"
-                                            SelectionMode="Single">
+                                            SelectionMode="Single"
+                                            SelectedItem="{Binding SelectedAvailableComponent}">
                                 <CollectionView.ItemTemplate>
                                     <DataTemplate>
-                                        <Frame BorderColor="{Binding Source={RelativeSource AncestorType={x:Type vm:BuildPcViewModel}},
-                                                                     Path=CompatibilityStatus,
-                                                                     Converter={StaticResource StatusToColorConverter}}"
+                                        <Frame BorderColor="#64748B"
                                                Padding="15"
                                                Margin="0,5"
                                                CornerRadius="10"
-                                               HasShadow="True"
                                                BackgroundColor="#020617">
                                             <Grid ColumnDefinitions="Auto,*"
                                                   RowDefinitions="Auto,Auto,Auto,Auto">
@@ -145,13 +150,15 @@
                             </CollectionView>
 
                             <Button Text="Добавить компонент"
-                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:BuildPcViewModel}},
-                                                      Path=SelectComponentCommand}"
+                                    Command="{Binding SelectComponentCommand}"
+                                    CommandParameter="{Binding SelectedAvailableComponent}"
                                     BackgroundColor="#3B82F6"
                                     TextColor="White"
                                     CornerRadius="8" />
                         </VerticalStackLayout>
                     </Frame>
+
+                    <!-- Выбранные компоненты -->
                     <Frame Padding="15"
                            BorderColor="#3B82F6"
                            CornerRadius="12"
@@ -195,6 +202,8 @@
                             </CollectionView>
                         </VerticalStackLayout>
                     </Frame>
+
+                    <!-- Проверка совместимости и корзина -->
                     <Frame Padding="15"
                            BorderColor="#10B981"
                            CornerRadius="12"

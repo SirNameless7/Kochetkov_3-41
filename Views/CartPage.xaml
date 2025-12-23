@@ -89,13 +89,13 @@
                                FontSize="16"
                                TextColor="#64748B"
                                HorizontalOptions="Center" />
-                        <Button Text="В каталог"
+                        <!--<Button Text="В каталог"
                                 Command="{Binding NavigateToCatalogCommand}"
                                 BackgroundColor="#3B82F6"
                                 TextColor="White"
                                 CornerRadius="12"
                                 WidthRequest="200"
-                                HorizontalOptions="Center" />
+                                HorizontalOptions="Center" />-->
                     </VerticalStackLayout>
                 </CollectionView.EmptyView>
 

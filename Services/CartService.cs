@@ -14,22 +14,37 @@ namespace KPO_Cursovoy.Services
 
         public void AddItem(CartItem item)
         {
-            var existingItem = Items.FirstOrDefault(i =>
-                (i.Pc != null && i.Pc.Id == item.Pc?.Id) ||
-                (i.Component != null && i.Component.Id == item.Component?.Id));
-
-            if (existingItem != null)
+            if (item.IsCustomBuild && item.Pc != null)
             {
-                existingItem.Quantity += item.Quantity;
+                var exists = Items
+                    .Where(i => i.IsCustomBuild && i.Pc != null)
+                    .Any(i =>
+                        i.Pc.Components.Count == item.Pc.Components.Count &&
+                        !i.Pc.Components.Except(item.Pc.Components).Any());
+
+                if (exists)
+                {
+                    return;
+                }
             }
             else
             {
-                item.Id = Items.Count > 0 ? Items.Max(i => i.Id) + 1 : 1;
-                Items.Add(item);
-            }
+                var existingItem = Items.FirstOrDefault(i =>
+                    (i.Pc != null && i.Pc.Id == item.Pc?.Id) ||
+                    (i.Component != null && i.Component.Id == item.Component?.Id));
 
+                if (existingItem != null)
+                {
+                    existingItem.Quantity += item.Quantity;
+                    CartChanged?.Invoke(this, EventArgs.Empty);
+                    return;
+                }
+            }
+            item.Id = Items.Count > 0 ? Items.Max(i => i.Id) + 1 : 1;
+            Items.Add(item);
             CartChanged?.Invoke(this, EventArgs.Empty);
         }
+
 
         public void RemoveItem(CartItem item)
         {

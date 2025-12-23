@@ -13,6 +13,8 @@ namespace KPO_Cursovoy.Services
         public DbSet<ServiceItem> Services { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<CompatibilityRule> CompatibilityRules { get; set; }
+        public DbSet<OrderComponent> OrderComponents { get; set; }  
+        public DbSet<OrderService> OrderServices { get; set; }      
 
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
@@ -27,11 +29,30 @@ namespace KPO_Cursovoy.Services
             modelBuilder.Entity<Order>().HasKey(o => o.Id);
             modelBuilder.Entity<CompatibilityRule>().HasKey(r => r.RuleId);
             modelBuilder.Ignore<ComponentSpecification>();
-            modelBuilder.Ignore<OrderComponent>();
-            modelBuilder.Ignore<OrderService>();
+            //// modelBuilder.Ignore<OrderComponent>();
+            //// modelBuilder.Ignore<OrderService>();
             modelBuilder.Ignore<DeliveryItem>();
             modelBuilder.Ignore<Specification>();
             modelBuilder.Ignore<SpecificationValue>();
+
+            modelBuilder.Entity<OrderComponent>()
+                .HasKey(oc => new { oc.OrderId, oc.ComponentId });
+
+            modelBuilder.Entity<OrderService>()
+                .HasKey(os => new { os.OrderId, os.ServiceId });
+
+            modelBuilder.Entity<Order>()
+                .HasMany(o => o.Components)
+                .WithOne()       
+                .HasForeignKey(oc => oc.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Order>()
+                .HasMany(o => o.Services)
+                .WithOne()
+                .HasForeignKey(os => os.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+
 
             modelBuilder.Entity<Account>()
                 .HasOne(a => a.User)
