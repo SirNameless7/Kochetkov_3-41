@@ -96,33 +96,29 @@ namespace KPO_Cursovoy.ViewModels
         {
             if (item == null) return;
 
-            var cartItem = _cartService.Items.FirstOrDefault(i => i.Id == item.Id);
-            if (cartItem != null)
-            {
-                cartItem.Quantity++;
-                UpdateTotal();
-            }
+            item.Quantity++;
+            RefreshItem(item);
+            UpdateTotal();
         }
 
         private void OnDecrease(CartItem item)
         {
             if (item == null) return;
 
-            var cartItem = _cartService.Items.FirstOrDefault(i => i.Id == item.Id);
-            if (cartItem != null)
+            if (item.Quantity > 1)
             {
-                if (cartItem.Quantity > 1)
-                {
-                    cartItem.Quantity--;
-                }
-                else
-                {
-                    _cartService.RemoveItem(cartItem);
-                    Items.Remove(item);
-                }
-                UpdateTotal();
+                item.Quantity--;
+                RefreshItem(item);
             }
+            else
+            {
+                _cartService.RemoveItem(item);
+                Items.Remove(item);
+            }
+
+            UpdateTotal();
         }
+
 
         private void OnRemove(CartItem item)
         {
@@ -156,7 +152,6 @@ namespace KPO_Cursovoy.ViewModels
                     }
                 }
 
-                // Проверка наличия компонентов
                 foreach (var comp in usedComponents)
                 {
                     if (comp.Stock < 1)
@@ -168,8 +163,6 @@ namespace KPO_Cursovoy.ViewModels
                         return;
                     }
                 }
-
-                // Создаём заказ и списываем компоненты
                 var order = await CreateOrderAsync(usedComponents);
                 if (order != null)
                 {
@@ -200,29 +193,29 @@ namespace KPO_Cursovoy.ViewModels
                 Status = OrderStatus.WaitingPayment
             };
 
+            var componentQuantities = new Dictionary<int, int>();
+
+            void AddComponent(int componentId, int qty)
+            {
+                if (componentQuantities.TryGetValue(componentId, out var existing))
+                    componentQuantities[componentId] = existing + qty;
+                else
+                    componentQuantities[componentId] = qty;
+            }
 
             foreach (var item in Items)
             {
                 if (item.Component != null)
                 {
-                    order.Components.Add(new OrderComponent
-                    {
-                        ComponentId = item.Component.Id,
-                        Quantity = item.Quantity
-                    });
+                    AddComponent(item.Component.Id, item.Quantity);
                 }
                 else if (item.Pc != null)
                 {
                     if (item.IsCustomBuild && item.Pc.Components != null)
                     {
                         foreach (var comp in item.Pc.Components)
-                        {
-                            order.Components.Add(new OrderComponent
-                            {
-                                ComponentId = comp.Id,
-                                Quantity = 1
-                            });
-                        }
+                            AddComponent(comp.Id, 1);
+
                         order.IsCustomBuild = true;
                     }
                     else
@@ -231,16 +224,18 @@ namespace KPO_Cursovoy.ViewModels
                     }
                 }
             }
+            foreach (var kv in componentQuantities)
+            {
+                order.Components.Add(new OrderComponent
+                {
+                    ComponentId = kv.Key,
+                    Quantity = kv.Value
+                });
+            }
 
             try
             {
-                foreach (var comp in usedComponents)
-                {
-                    comp.Stock--;
-                }
-
                 order = await _databaseService.CreateOrderAsync(order, usedComponents);
-
             }
             catch (Exception ex)
             {
@@ -250,6 +245,7 @@ namespace KPO_Cursovoy.ViewModels
 
             return order;
         }
+
 
         private void OnClearCart()
         {
@@ -276,5 +272,13 @@ namespace KPO_Cursovoy.ViewModels
                 IsBusy = false;
             }
         }
+
+        private void RefreshItem(CartItem item)
+        {
+            var idx = Items.IndexOf(item);
+            if (idx >= 0)
+                Items[idx] = item; // триггерит CollectionChanged(Replace)
+        }
+
     }
 }

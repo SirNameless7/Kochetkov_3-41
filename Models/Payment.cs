@@ -29,7 +29,7 @@ namespace KPO_Cursovoy.Models
         public PaymentMethod Method { get; set; } = PaymentMethod.Cash;
         public PaymentType Type { get; set; } = PaymentType.Full;
         public decimal Amount { get; set; }
-        public DateTime PaymentDate { get; set; } = DateTime.Now;
+        public DateTime PaymentDate { get; set; } = DateTime.UtcNow;
         public PaymentStatus Status { get; set; } = PaymentStatus.Pending;
     }
 }

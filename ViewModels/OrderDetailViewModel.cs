@@ -1,4 +1,7 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using KPO_Cursovoy.Models;
 using KPO_Cursovoy.Services;
@@ -11,31 +14,27 @@ namespace KPO_Cursovoy.ViewModels
         private readonly DatabaseService _databaseService;
         private readonly INavigationService _navigationService;
 
-        public Order Order { get; set; } = new();
-        public ObservableCollection<OrderComponent> OrderItems { get; } = new();
-        public ObservableCollection<OrderService> Services { get; } = new();
+        private Order _order = new();
+        public Order Order
+        {
+            get => _order;
+            set
+            {
+                if (SetProperty(ref _order, value))
+                {
+                    OnPropertyChanged(nameof(IsPaymentSectionVisible));
+                    OnPropertyChanged(nameof(CanCancelOrder));
+                }
+            }
+        }
+
+        public ObservableCollection<OrderItemLine> OrderItems { get; } = new();
+        public ObservableCollection<ServiceLine> Services { get; } = new();
         public ObservableCollection<StatusHistoryItem> StatusHistory { get; } = new();
 
         public bool HasServices => Services.Count > 0;
         public bool IsPaymentSectionVisible => Order.Status == OrderStatus.WaitingPayment;
         public bool CanCancelOrder => Order.Status == OrderStatus.New || Order.Status == OrderStatus.WaitingPayment;
-
-        public List<string> PaymentMethods { get; } = new() { "Наличные", "Перевод" };
-        public List<string> PaymentTypes { get; } = new() { "Сразу", "Рассрочка" };
-
-        private string _selectedPaymentMethod = "Наличные";
-        public string SelectedPaymentMethod
-        {
-            get => _selectedPaymentMethod;
-            set => SetProperty(ref _selectedPaymentMethod, value);
-        }
-
-        private string _selectedPaymentType = "Сразу";
-        public string SelectedPaymentType
-        {
-            get => _selectedPaymentType;
-            set => SetProperty(ref _selectedPaymentType, value);
-        }
 
         public ICommand PayOrderCommand { get; }
         public ICommand CancelOrderCommand { get; }
@@ -45,8 +44,9 @@ namespace KPO_Cursovoy.ViewModels
         {
             _databaseService = databaseService;
             _navigationService = navigationService;
+
             PayOrderCommand = new AsyncCommand(OnPayOrder);
-            CancelOrderCommand = new Command(OnCancelOrder);
+            CancelOrderCommand = new AsyncCommand(OnCancelOrder);
             BackCommand = new Command(OnBack);
         }
 
@@ -56,21 +56,85 @@ namespace KPO_Cursovoy.ViewModels
             {
                 IsBusy = true;
 
-                var orders = await _databaseService.GetOrdersByUserAsync(App.CurrentUser.UserId);
-
-                Order = orders.FirstOrDefault(o => o.Id == orderId) ?? new Order { Id = orderId };
-
-                OrderItems.Clear();
-                foreach (var oc in Order.Components)
+                if (App.CurrentUser == null)
                 {
-                    OrderItems.Add(oc);
+                    Order = new Order { Id = orderId };
+                    OrderItems.Clear();
+                    Services.Clear();
+                    StatusHistory.Clear();
+                    OnPropertyChanged(nameof(HasServices));
+                    return;
                 }
 
+                var orders = await _databaseService.GetOrdersByUserAsync(App.CurrentUser.UserId);
+                var found = orders.FirstOrDefault(o => o.Id == orderId);
+
+                if (found == null)
+                {
+                    Order = new Order { Id = orderId };
+                    OrderItems.Clear();
+                    Services.Clear();
+                    StatusHistory.Clear();
+                    OnPropertyChanged(nameof(HasServices));
+                    return;
+                }
+
+                Order = found;
+
+                // Услуги (ObservableCollection для UI)
                 Services.Clear();
                 foreach (var os in Order.Services)
                 {
-                    Services.Add(os);
+                    Services.Add(new ServiceLine
+                    {
+                        Name = os.Service.Name,
+                        Description = os.Service.Description,
+                        Price = os.Service.Price
+                    });
                 }
+                OnPropertyChanged(nameof(HasServices));
+
+                // Состав (либо готовый ПК, либо комплектующие)
+                OrderItems.Clear();
+
+                decimal itemsSum = 0m;
+
+                if (Order.PcId.HasValue && !Order.IsCustomBuild && (Order.Components == null || Order.Components.Count == 0))
+                {
+                    var pc = await _databaseService.GetPcByIdAsync(Order.PcId.Value);
+                    if (pc != null)
+                    {
+                        OrderItems.Add(new OrderItemLine
+                        {
+                            Name = pc.Name,
+                            CategoryCode = "Готовый ПК",
+                            Price = pc.Price,
+                            Quantity = 1
+                        });
+
+                        itemsSum = pc.Price;
+                    }
+                }
+                else
+                {
+                    foreach (var oc in Order.Components)
+                    {
+                        OrderItems.Add(new OrderItemLine
+                        {
+                            Name = oc.Component.Name,
+                            CategoryCode = oc.Component.CategoryCode,
+                            Price = oc.Component.Price,
+                            Quantity = oc.Quantity
+                        });
+                    }
+
+                    itemsSum = Order.Components.Sum(c => c.Component.Price * c.Quantity);
+                }
+
+                var servicesSum = Services.Sum(s => s.Price);
+
+                Order.TotalAmount = itemsSum + servicesSum;
+                OnPropertyChanged(nameof(Order));
 
                 StatusHistory.Clear();
                 var allStatuses = Enum.GetValues(typeof(OrderStatus)).Cast<OrderStatus>();
@@ -82,13 +146,13 @@ namespace KPO_Cursovoy.ViewModels
                         {
                             StatusText = status.ToString(),
                             StatusColor = status == Order.Status ? Colors.Blue : Colors.Gray,
-                            Timestamp = Order.OrderDate.AddHours((int)status * 5) 
+                            Timestamp = Order.OrderDate.AddHours((int)status * 5)
                         });
                     }
                 }
 
-                Order.TotalAmount = Order.Components.Sum(c => c.Component.Price * c.Quantity)
-                                    + Order.Services.Sum(s => s.Service.Price);
+                OnPropertyChanged(nameof(IsPaymentSectionVisible));
+                OnPropertyChanged(nameof(CanCancelOrder));
             }
             finally
             {
@@ -101,7 +165,14 @@ namespace KPO_Cursovoy.ViewModels
             try
             {
                 IsBusy = true;
+
+                await _databaseService.UpdateOrderStatusAsync(Order.Id, OrderStatus.Paid);
                 Order.Status = OrderStatus.Paid;
+
+                OnPropertyChanged(nameof(Order));
+                OnPropertyChanged(nameof(IsPaymentSectionVisible));
+                OnPropertyChanged(nameof(CanCancelOrder));
+
                 await _navigationService.GoBackAsync();
             }
             finally
@@ -110,12 +181,19 @@ namespace KPO_Cursovoy.ViewModels
             }
         }
 
-        private async void OnCancelOrder()
+        private async Task OnCancelOrder()
         {
             try
             {
                 IsBusy = true;
+
+                await _databaseService.UpdateOrderStatusAsync(Order.Id, OrderStatus.Cancelled);
                 Order.Status = OrderStatus.Cancelled;
+
+                OnPropertyChanged(nameof(Order));
+                OnPropertyChanged(nameof(IsPaymentSectionVisible));
+                OnPropertyChanged(nameof(CanCancelOrder));
+
                 await _navigationService.GoBackAsync();
             }
             finally
@@ -123,11 +201,28 @@ namespace KPO_Cursovoy.ViewModels
                 IsBusy = false;
             }
         }
+
 
         private async void OnBack()
         {
             await _navigationService.GoBackAsync();
         }
+    }
+
+    public class OrderItemLine
+    {
+        public string Name { get; set; } = string.Empty;
+        public string CategoryCode { get; set; } = string.Empty;
+        public decimal Price { get; set; }
+        public int Quantity { get; set; }
+        public decimal LineTotal => Price * Quantity;
+    }
+
+    public class ServiceLine
+    {
+        public string Name { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public decimal Price { get; set; }
     }
 
     public class StatusHistoryItem

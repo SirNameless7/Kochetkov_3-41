@@ -23,32 +23,41 @@ namespace KPO_Cursovoy.Services
                     Method = method,
                     Type = type,
                     Amount = await GetOrderAmountAsync(orderId),
-                    Status = PaymentStatus.Pending
+                    Status = PaymentStatus.Pending,
+                    PaymentDate = DateTime.UtcNow
                 };
+
                 payment.Status = await SimulatePaymentProcessingAsync(payment);
 
                 await SavePaymentAsync(payment);
+
                 return payment.Status == PaymentStatus.Paid;
             }
             catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine("PAYMENT ERROR (full):");
+                System.Diagnostics.Debug.WriteLine(ex.ToString()); // важно!
                 return false;
             }
+
         }
 
         private async Task<PaymentStatus> SimulatePaymentProcessingAsync(Payment payment)
         {
-            await Task.Delay(1000);
-            return new Random().Next(0, 2) == 0 ? PaymentStatus.Paid : PaymentStatus.Failed;
+            await Task.Delay(800);
+            return PaymentStatus.Paid;
         }
+
 
         private async Task<decimal> GetOrderAmountAsync(int orderId)
         {
-            return 10000;
+            var order = await _databaseService.GetOrderByIdAsync(orderId);
+            return order?.TotalAmount ?? 0m;
         }
 
-        private async Task SavePaymentAsync(Payment payment)
+        private Task SavePaymentAsync(Payment payment)
         {
+            return _databaseService.CreatePaymentAsync(payment);
         }
     }
 }

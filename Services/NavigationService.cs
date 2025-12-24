@@ -1,111 +1,117 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using KPO_Cursovoy.Constants;
+using KPO_Cursovoy.Models;
+using KPO_Cursovoy.ViewModels;
+using KPO_Cursovoy.Views;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls;
-using KPO_Cursovoy.Views;
-using KPO_Cursovoy.ViewModels;
-using KPO_Cursovoy.Models;
 
-namespace KPO_Cursovoy.Services
+namespace KPO_Cursovoy.Services;
+
+public class NavigationService : INavigationService
 {
-    public class NavigationService : INavigationService
+    private readonly IServiceProvider _serviceProvider;
+
+    public NavigationService(IServiceProvider serviceProvider)
     {
-        private readonly IServiceProvider _serviceProvider;
+        _serviceProvider = serviceProvider;
+    }
 
-        public NavigationService(IServiceProvider serviceProvider)
-        {
-            _serviceProvider = serviceProvider;
-        }
+    public Task NavigateToAsync(string route) => NavigateToAsync(route, null);
 
-        public async Task NavigateToAsync(string route)
+    public async Task NavigateToAsync(string route, object? parameter)
+    {
+        if (Application.Current?.MainPage is Shell && Shell.Current != null)
         {
-            await Navigate(route, null);
-        }
-
-        public async Task NavigateToAsync(string route, object parameter)
-        {
-            await Navigate(route, parameter);
-        }
-
-        public async Task GoBackAsync()
-        {
-            if (Application.Current.MainPage is NavigationPage navPage)
+            // Все ShellContent-страницы (и auth, и tabbar) переключаем через //
+            if (route is Routes.StartPage or Routes.LoginPage or Routes.RegisterPage
+                or Routes.MainPage or Routes.BuildPcPage or Routes.CartPage or Routes.OrdersPage or Routes.ProfilePage)
             {
-                await navPage.PopAsync();
-            }
-        }
-
-        private async Task Navigate(string route, object parameter)
-        {
-            ContentPage page = route switch
-            {
-                "StartPage" => CreatePage<StartPage, StartPageViewModel>(),
-                "LoginPage" => CreatePage<LoginPage, LoginViewModel>(),
-                "RegisterPage" => CreatePage<RegisterPage, RegisterViewModel>(),
-                "MainPage" => CreatePage<MainPage, MainPageViewModel>(),
-                "BuildPcPage" => CreatePage<BuildPcPage, BuildPcViewModel>(),
-                "CartPage" => CreatePage<CartPage, CartViewModel>(),
-                "OrdersPage" => CreatePage<OrdersPage, OrderViewModel>(),
-                "ServicesPage" => CreatePage<ServicesPage, ServicesViewModel>(),
-                "PcDetailPage" => CreatePcDetailPage(parameter),
-                "OrderDetailPage" => CreateOrderDetailPage(parameter),
-                "ProfilePage" => CreatePage<ProfilePage, ProfileViewModel>(),
-                "AdminPage" => CreatePage<AdminPage, AdminViewModel>(),
-                "ReportsPage" => CreatePage<ReportsPage, ReportsViewModel>(),
-                _ => new ContentPage { Title = $"Страница {route} не найдена" }
-            };
-
-            if (Application.Current.MainPage is NavigationPage navPage)
-                await navPage.PushAsync(page);
-            else
-                Application.Current.MainPage = new NavigationPage(page);
-        }
-        private OrderDetailPage CreateOrderDetailPage(object parameter)
-        {
-            var vm = _serviceProvider.GetRequiredService<OrderDetailViewModel>();
-
-            int orderId = 0;
-
-            if (parameter is Dictionary<string, object> dict &&
-                dict.TryGetValue("OrderId", out var idObj))
-            {
-                if (idObj is int id)
-                    orderId = id;
-                else if (idObj is long longId)
-                    orderId = (int)longId;
-                else if (idObj is string s && int.TryParse(s, out var parsed))
-                    orderId = parsed;
+                await Shell.Current.GoToAsync($"//{route}");
+                return;
             }
 
-            return new OrderDetailPage(vm, orderId);
+            // Остальное пушим в стек текущей секции
+            var page = CreatePageByRoute(route, parameter);
+            await Shell.Current.Navigation.PushAsync(page);
+            return;
         }
 
+        // Фолбэк
+        var fallbackPage = CreatePageByRoute(route, parameter);
 
+        if (Application.Current?.MainPage is NavigationPage nav)
+            await nav.PushAsync(fallbackPage);
+        else if (Application.Current != null)
+            Application.Current.MainPage = new NavigationPage(fallbackPage);
+    }
 
-
-        private TPage CreatePage<TPage, TViewModel>()
-            where TPage : ContentPage
-            where TViewModel : class
+    public async Task GoBackAsync()
+    {
+        if (Application.Current?.MainPage is Shell && Shell.Current != null)
         {
-            var viewModel = _serviceProvider.GetRequiredService<TViewModel>();
-            var page = (TPage)Activator.CreateInstance(typeof(TPage), viewModel)!;
-            return page;
+            if (Shell.Current.Navigation.NavigationStack.Count > 1)
+                await Shell.Current.Navigation.PopAsync();
+            return;
         }
 
-        private PcDetailPage CreatePcDetailPage(object parameter)
+        if (Application.Current?.MainPage is NavigationPage nav)
+            await nav.PopAsync();
+    }
+
+    private ContentPage CreatePageByRoute(string route, object? parameter)
+    {
+        return route switch
         {
-            var vm = _serviceProvider.GetRequiredService<PcDetailViewModel>();
-            var page = new PcDetailPage(vm);
+            Routes.ServicesPage => CreatePage<ServicesPage, ServicesViewModel>(),
+            Routes.AdminPage => CreatePage<AdminPage, AdminViewModel>(),
+            Routes.ReportsPage => CreatePage<ReportsPage, ReportsViewModel>(),
 
-            if (parameter is Dictionary<string, object> dict &&
-                dict.TryGetValue("Pc", out var pcObj) &&
-                pcObj is PcItem pc)
-            {
-                page.Initialize(pc);
-            }
+            Routes.PcDetailPage => CreatePcDetailPage(parameter),
+            Routes.OrderDetailPage => CreateOrderDetailPage(parameter),
 
-            return page;
+            _ => new ContentPage { Title = $"Страница {route} не найдена" }
+        };
+    }
+
+    private TPage CreatePage<TPage, TViewModel>()
+        where TPage : ContentPage
+        where TViewModel : class
+    {
+        var vm = _serviceProvider.GetRequiredService<TViewModel>();
+        return (TPage)Activator.CreateInstance(typeof(TPage), vm)!;
+    }
+
+    private PcDetailPage CreatePcDetailPage(object? parameter)
+    {
+        var vm = _serviceProvider.GetRequiredService<PcDetailViewModel>();
+        var page = new PcDetailPage(vm);
+
+        if (parameter is Dictionary<string, object> dict &&
+            dict.TryGetValue("Pc", out var pcObj) &&
+            pcObj is PcItem pc)
+        {
+            page.Initialize(pc);
         }
+
+        return page;
+    }
+
+    private OrderDetailPage CreateOrderDetailPage(object? parameter)
+    {
+        var vm = _serviceProvider.GetRequiredService<OrderDetailViewModel>();
+
+        var orderId = 0;
+        if (parameter is Dictionary<string, object> dict &&
+            dict.TryGetValue("OrderId", out var idObj))
+        {
+            if (idObj is int id) orderId = id;
+            else if (idObj is long longId) orderId = (int)longId;
+            else if (idObj is string s && int.TryParse(s, out var parsed)) orderId = parsed;
+        }
+
+        return new OrderDetailPage(vm, orderId);
     }
 }

@@ -3,7 +3,7 @@ using KPO_Cursovoy.Models;
 
 namespace KPO_Cursovoy.Services
 {
-    public class AppDbContext : DbContext 
+    public class AppDbContext : DbContext
     {
         public DbSet<User> Users { get; set; }
         public DbSet<Account> Accounts { get; set; }
@@ -12,9 +12,11 @@ namespace KPO_Cursovoy.Services
         public DbSet<PcItem> Pcs { get; set; }
         public DbSet<ServiceItem> Services { get; set; }
         public DbSet<Order> Orders { get; set; }
+        public DbSet<Payment> Payments { get; set; }
+
         public DbSet<CompatibilityRule> CompatibilityRules { get; set; }
-        public DbSet<OrderComponent> OrderComponents { get; set; }  
-        public DbSet<OrderService> OrderServices { get; set; }      
+        public DbSet<OrderComponent> OrderComponents { get; set; }
+        public DbSet<OrderService> OrderServices { get; set; }
 
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
@@ -28,9 +30,16 @@ namespace KPO_Cursovoy.Services
             modelBuilder.Entity<ServiceItem>().HasKey(s => s.Id);
             modelBuilder.Entity<Order>().HasKey(o => o.Id);
             modelBuilder.Entity<CompatibilityRule>().HasKey(r => r.RuleId);
+
+            modelBuilder.Entity<Payment>().HasKey(p => p.Id);
+            modelBuilder.Entity<Payment>()
+                .HasOne<Order>()
+                .WithMany()
+                .HasForeignKey(p => p.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+
             modelBuilder.Ignore<ComponentSpecification>();
-            //// modelBuilder.Ignore<OrderComponent>();
-            //// modelBuilder.Ignore<OrderService>();
             modelBuilder.Ignore<DeliveryItem>();
             modelBuilder.Ignore<Specification>();
             modelBuilder.Ignore<SpecificationValue>();
@@ -43,7 +52,7 @@ namespace KPO_Cursovoy.Services
 
             modelBuilder.Entity<Order>()
                 .HasMany(o => o.Components)
-                .WithOne()       
+                .WithOne()
                 .HasForeignKey(oc => oc.OrderId)
                 .OnDelete(DeleteBehavior.Cascade);
 
@@ -53,12 +62,10 @@ namespace KPO_Cursovoy.Services
                 .HasForeignKey(os => os.OrderId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-
             modelBuilder.Entity<Account>()
                 .HasOne(a => a.User)
                 .WithMany()
                 .HasForeignKey(a => a.UserId);
-
 
             modelBuilder.Entity<ComponentItem>()
                 .HasOne<ComponentCategory>()
@@ -76,7 +83,6 @@ namespace KPO_Cursovoy.Services
             modelBuilder.Entity<Account>().HasData(
                new Account { AccountId = 1, UserId = 1, Login = "ivan", PasswordHash = "12345", Role = "client" },
                new Account { AccountId = 2, UserId = 2, Login = "maria", PasswordHash = "54321", Role = "client" }
-
             );
 
             modelBuilder.Entity<ComponentCategory>().HasData(
@@ -84,18 +90,41 @@ namespace KPO_Cursovoy.Services
                 new ComponentCategory { CategoryCode = "MB", CategoryName = "Материнская плата" },
                 new ComponentCategory { CategoryCode = "RAM", CategoryName = "Оперативная память" },
                 new ComponentCategory { CategoryCode = "GPU", CategoryName = "Видеокарта" },
-                new ComponentCategory { CategoryCode = "SSD", CategoryName = "Накопитель SSD" }
+                new ComponentCategory { CategoryCode = "SSD", CategoryName = "Накопитель SSD" },
+                new ComponentCategory { CategoryCode = "PSU", CategoryName = "Блок питания" },
+                new ComponentCategory { CategoryCode = "CASE", CategoryName = "Корпус" }
+
             );
 
             modelBuilder.Entity<ComponentItem>().HasData(
-                new ComponentItem { Id = 1, Name = "Intel Core i5-11400", CategoryCode = "CPU", Price = 15000, Stock = 10 },
-                new ComponentItem { Id = 2, Name = "AMD Ryzen 5 5600G", CategoryCode = "CPU", Price = 16000, Stock = 5 },
-                new ComponentItem { Id = 3, Name = "Gigabyte B560M", CategoryCode = "MB", Price = 8000, Stock = 7 },
-                new ComponentItem { Id = 4, Name = "NVIDIA RTX 3060", CategoryCode = "GPU", Price = 25000, Stock = 3 },
-                new ComponentItem { Id = 5, Name = "Corsair 16GB DDR4", CategoryCode = "RAM", Price = 7000, Stock = 20 },
-                new ComponentItem { Id = 6, Name = "SSD Samsung 500GB", CategoryCode = "SSD", Price = 5000, Stock = 15 }
+                // CPU
+                new ComponentItem { Id = 1, Name = "Intel Core i5-11400", CategoryCode = "CPU", Price = 15000, Stock = 10, Socket = "LGA1200", PowerDrawW = 65 },
+                new ComponentItem { Id = 2, Name = "AMD Ryzen 5 5600G", CategoryCode = "CPU", Price = 16000, Stock = 15, Socket = "AM4", PowerDrawW = 65 },
+
+                // MB
+                new ComponentItem { Id = 3, Name = "Gigabyte B560M", CategoryCode = "MB", Price = 8000, Stock = 17, Socket = "LGA1200", MemoryType = "DDR4", RamSlots = 4 },
+                new ComponentItem { Id = 7, Name = "ASUS B550M", CategoryCode = "MB", Price = 9000, Stock = 16, Socket = "AM4", MemoryType = "DDR4", RamSlots = 4 },
+
+                // RAM
+                new ComponentItem { Id = 5, Name = "Corsair 16GB DDR4", CategoryCode = "RAM", Price = 7000, Stock = 20, MemoryType = "DDR4" },
+                new ComponentItem { Id = 8, Name = "Kingston 8GB DDR4", CategoryCode = "RAM", Price = 3500, Stock = 30, MemoryType = "DDR4" },
+
+                // GPU
+                new ComponentItem { Id = 4, Name = "NVIDIA RTX 3060", CategoryCode = "GPU", Price = 25000, Stock = 15, GpuLengthMm = 242, PowerDrawW = 170 },
+                new ComponentItem { Id = 9, Name = "NVIDIA RTX 4070", CategoryCode = "GPU", Price = 60000, Stock = 17, GpuLengthMm = 300, PowerDrawW = 200 },
+
+                // SSD
+                new ComponentItem { Id = 6, Name = "SSD Samsung 500GB", CategoryCode = "SSD", Price = 5000, Stock = 25 },
+
+                // CASE
+                new ComponentItem { Id = 10, Name = "Case Mini Tower 280mm", CategoryCode = "CASE", Price = 4500, Stock = 20, MaxGpuLengthMm = 280 },
+                new ComponentItem { Id = 11, Name = "Case Mid Tower 340mm", CategoryCode = "CASE", Price = 6500, Stock = 18, MaxGpuLengthMm = 340 },
+
+                // PSU
+                new ComponentItem { Id = 12, Name = "PSU 500W", CategoryCode = "PSU", Price = 4000, Stock = 10, Wattage = 500 },
+                new ComponentItem { Id = 13, Name = "PSU 650W", CategoryCode = "PSU", Price = 5500, Stock = 10, Wattage = 650 }
             );
-            
+
             modelBuilder.Entity<PcItem>().HasData(
                 new PcItem
                 {
@@ -133,7 +162,6 @@ namespace KPO_Cursovoy.Services
                     Price = 45000
                 }
             );
-
 
             modelBuilder.Entity<ServiceItem>().HasData(
                 new ServiceItem { Id = 1, Name = "Чистка ПК", Description = "Удаление пыли", DurationDays = 2, Price = 2000 },

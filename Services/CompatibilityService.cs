@@ -1,64 +1,85 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 using KPO_Cursovoy.Models;
-using KPO_Cursovoy.Services;
 
 namespace KPO_Cursovoy.Services
 {
     public class CompatibilityService
     {
-        private readonly DatabaseService _databaseService;
-
-        public CompatibilityService(DatabaseService databaseService)
+        public Task<CompatibilityResult> CheckCompatibilityAsync(List<ComponentItem> components)
         {
-            _databaseService = databaseService;
-        }
-
-        public async Task<CompatibilityResult> CheckCompatibilityAsync(List<ComponentItem> components)
-        {
-            var rules = await _databaseService.GetCompatibilityRulesAsync();
             var result = new CompatibilityResult { IsCompatible = true };
-            foreach (var rule in rules)
+
+            ComponentItem? cpu = components.FirstOrDefault(c => c.CategoryCode == "CPU");
+            ComponentItem? mb = components.FirstOrDefault(c => c.CategoryCode == "MB");
+            ComponentItem? gpu = components.FirstOrDefault(c => c.CategoryCode == "GPU");
+            ComponentItem? psu = components.FirstOrDefault(c => c.CategoryCode == "PSU");
+            ComponentItem? pcCase = components.FirstOrDefault(c => c.CategoryCode == "CASE");
+
+            var rams = components.Where(c => c.CategoryCode == "RAM").ToList();
+            var ssds = components.Where(c => c.CategoryCode == "SSD").ToList();
+
+            // CPU <-> MB (Socket)
+            if (cpu != null && mb != null && !string.IsNullOrWhiteSpace(cpu.Socket) && !string.IsNullOrWhiteSpace(mb.Socket))
             {
-                var comp1 = components.FirstOrDefault(c => c.CategoryCode == rule.CategoryCode1);
-                var comp2 = components.FirstOrDefault(c => c.CategoryCode == rule.CategoryCode2);
+                if (!string.Equals(cpu.Socket, mb.Socket, System.StringComparison.OrdinalIgnoreCase))
+                    Add(result, cpu.Name, mb.Name, $"Разные сокеты: CPU={cpu.Socket}, MB={mb.Socket}");
+            }
 
-                if (comp1 != null && comp2 != null)
+            // MB <-> RAM (тип памяти)
+            if (mb != null && rams.Count > 0 && !string.IsNullOrWhiteSpace(mb.MemoryType))
+            {
+                foreach (var ram in rams)
                 {
-                    bool isCompatible = CheckSimpleCompatibility(comp1, comp2, rule);
-
-                    if (!isCompatible)
+                    if (!string.IsNullOrWhiteSpace(ram.MemoryType) &&
+                        !string.Equals(ram.MemoryType, mb.MemoryType, System.StringComparison.OrdinalIgnoreCase))
                     {
-                        result.IsCompatible = false;
-                        result.IncompatiblePairs.Add(new IncompatiblePair
-                        {
-                            Component1 = comp1.Name,
-                            Component2 = comp2.Name,
-                            Reason = $"Несовместимость {rule.CategoryCode1}-{rule.CategoryCode2}"
-                        });
+                        Add(result, mb.Name, ram.Name, $"Тип памяти не совпадает: MB={mb.MemoryType}, RAM={ram.MemoryType}");
                     }
                 }
+
+                // количество планок <= слотов (если известно)
+                if (mb.RamSlots.HasValue && rams.Count > mb.RamSlots.Value)
+                    Add(result, mb.Name, "RAM", $"Слишком много модулей RAM: {rams.Count}, слотов на MB: {mb.RamSlots.Value}");
             }
 
-            return result;
+            // GPU <-> CASE (длина)
+            if (gpu != null && pcCase != null && gpu.GpuLengthMm.HasValue && pcCase.MaxGpuLengthMm.HasValue)
+            {
+                if (gpu.GpuLengthMm.Value > pcCase.MaxGpuLengthMm.Value)
+                    Add(result, gpu.Name, pcCase.Name, $"Видеокарта длиннее корпуса: GPU={gpu.GpuLengthMm}мм, CASE max={pcCase.MaxGpuLengthMm}мм");
+            }
+
+            // PSU (мощность)
+            if (psu != null && psu.Wattage.HasValue)
+            {
+                int baseW = 60; // материнка/вентиляторы/периферия
+                int ramW = rams.Count * 5;
+                int ssdW = ssds.Count * 5;
+
+                int cpuW = cpu?.PowerDrawW ?? 0;
+                int gpuW = gpu?.PowerDrawW ?? 0;
+
+                // запас 30%
+                int required = (int)System.Math.Ceiling((baseW + ramW + ssdW + cpuW + gpuW) * 1.3);
+
+                if (psu.Wattage.Value < required)
+                    Add(result, psu.Name, "Система", $"Не хватает мощности БП: PSU={psu.Wattage}W, нужно примерно {required}W");
+            }
+
+            return Task.FromResult(result);
         }
 
-        private bool CheckSimpleCompatibility(ComponentItem comp1, ComponentItem comp2, CompatibilityRule rule)
+        private static void Add(CompatibilityResult result, string c1, string c2, string reason)
         {
-            if (rule.CategoryCode1 == "CPU" && rule.CategoryCode2 == "MB")
+            result.IsCompatible = false;
+            result.IncompatiblePairs.Add(new IncompatiblePair
             {
-                return (comp1.Name.Contains("Intel") && comp2.Name.Contains("Gigabyte")) ||
-                       (comp1.Name.Contains("AMD") && comp2.Name.Contains("ASUS"));
-            }
-
-            if (rule.CategoryCode1 == "MB" && rule.CategoryCode2 == "RAM")
-            {
-                return comp2.Name.Contains("DDR4");
-            }
-
-            return true;
+                Component1 = c1,
+                Component2 = c2,
+                Reason = reason
+            });
         }
     }
 

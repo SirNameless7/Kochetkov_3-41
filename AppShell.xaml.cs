@@ -1,48 +1,66 @@
 ﻿using System.Linq;
 using Microsoft.Maui.Controls;
+using KPO_Cursovoy.Constants;
 
-namespace KPO_Cursovoy
+namespace KPO_Cursovoy;
+
+public partial class AppShell : Shell
 {
-    public partial class AppShell : Shell
+    public AppShell()
     {
-        public AppShell()
-        {
-            InitializeComponent();
-            RegisterAllRoutes();
-            Navigating += OnNavigating;
-        }
+        InitializeComponent();
 
-        private void RegisterAllRoutes()
-        {
-            Routing.RegisterRoute("StartPage", typeof(Views.StartPage));
-            Routing.RegisterRoute("LoginPage", typeof(Views.LoginPage));
-            Routing.RegisterRoute("RegisterPage", typeof(Views.RegisterPage));
-            Routing.RegisterRoute("MainPage", typeof(Views.MainPage));
-            Routing.RegisterRoute("BuildPcPage", typeof(Views.BuildPcPage));
-            Routing.RegisterRoute("CartPage", typeof(Views.CartPage));
-            Routing.RegisterRoute("OrdersPage", typeof(Views.OrdersPage));
-            Routing.RegisterRoute("ServicesPage", typeof(Views.ServicesPage));
-            Routing.RegisterRoute("PcDetailPage", typeof(Views.PcDetailPage));
-            Routing.RegisterRoute("OrderDetailPage", typeof(Views.OrderDetailPage));
-            Routing.RegisterRoute("ProfilePage", typeof(Views.ProfilePage));
-            Routing.RegisterRoute("AdminPage", typeof(Views.AdminPage));
-            Routing.RegisterRoute("ReportsPage", typeof(Views.ReportsPage));
-        }
+        RegisterAllRoutes();
+        Navigating += OnNavigating;
+    }
 
-        private async void OnNavigating(object sender, ShellNavigatingEventArgs e)
-        {
-            var protectedRoutes = new[] { "mainpage", "buildpcpage", "cartpage", "orderspage", "servicespage", "profilepage", "adminpage", "reportspage" };
-            var currentRoute = e.Target.Location.OriginalString.ToLower();
+    private void RegisterAllRoutes()
+    {
+        // Эти страницы не надо регистрировать, они уже в AppShell.xaml:
+        // StartPage, LoginPage, RegisterPage, MainPage, BuildPcPage, CartPage, OrdersPage, ProfilePage
 
-            if (protectedRoutes.Any(route => currentRoute.Contains(route)))
-            {
-                if (App.CurrentUser == null)
-                {
-                    e.Cancel();
-                    await Shell.Current.GoToAsync("//StartPage");
-                    await Shell.Current.DisplayAlert("Требуется авторизация", "Пожалуйста, войдите в систему", "ОК");
-                }
-            }
+        // Доп. страницы (если где-то будешь переходить по роуту)
+        Routing.RegisterRoute(Routes.ServicesPage, typeof(Views.ServicesPage));
+        Routing.RegisterRoute(Routes.AdminPage, typeof(Views.AdminPage));
+        Routing.RegisterRoute(Routes.ReportsPage, typeof(Views.ReportsPage));
+        Routing.RegisterRoute(Routes.PcDetailPage, typeof(Views.PcDetailPage));
+        Routing.RegisterRoute(Routes.OrderDetailPage, typeof(Views.OrderDetailPage));
+    }
+
+    private async void OnNavigating(object? sender, ShellNavigatingEventArgs e)
+    {
+        var target = (e.Target?.Location.OriginalString ?? string.Empty).ToLowerInvariant();
+
+        // Всегда разрешаем auth-страницы
+        if (target.Contains("startpage") || target.Contains("loginpage") || target.Contains("registerpage"))
+            return;
+
+        // Каталог доступен гостю
+        if (target.Contains(Routes.MainPage.ToLowerInvariant()))
+            return;
+
+        var protectedRoutes = new[]
+        {
+            Routes.BuildPcPage,
+            Routes.CartPage,
+            Routes.OrdersPage,
+            Routes.ProfilePage,
+            Routes.ServicesPage,
+            Routes.AdminPage,
+            Routes.ReportsPage
         }
+        .Select(r => r.ToLowerInvariant())
+        .ToArray();
+
+        var isProtected = protectedRoutes.Any(r => target.Contains(r));
+        if (!isProtected)
+            return;
+
+        if (App.CurrentUser != null)
+            return;
+
+        e.Cancel();
+        await Shell.Current.GoToAsync("//LoginPage");
+        await Shell.Current.DisplayAlert("Требуется авторизация", "Пожалуйста, войдите в систему", "ОК");
     }
 }

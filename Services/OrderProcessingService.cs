@@ -24,6 +24,7 @@ namespace KPO_Cursovoy.Services
         {
             if (!await _stockService.CheckAvailabilityAsync(order.Components))
                 throw new Exception("Некоторые компоненты отсутствуют на складе");
+
             await _stockService.ReserveComponentsAsync(order.Id, order.Components);
             return await _databaseService.CreateOrderAsync(order);
         }
@@ -36,6 +37,7 @@ namespace KPO_Cursovoy.Services
                 await UpdateOrderStatusAsync(orderId, OrderStatus.Paid);
                 return true;
             }
+
             return false;
         }
 
@@ -47,6 +49,7 @@ namespace KPO_Cursovoy.Services
 
         private async Task UpdateOrderStatusAsync(int orderId, OrderStatus status)
         {
+            await _databaseService.UpdateOrderStatusAsync(orderId, status);
         }
     }
 }

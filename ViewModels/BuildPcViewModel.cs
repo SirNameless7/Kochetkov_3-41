@@ -1,319 +1,346 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using KPO_Cursovoy.Constants;
 using KPO_Cursovoy.Models;
 using KPO_Cursovoy.Services;
-using KPO_Cursovoy.Constants;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 
-namespace KPO_Cursovoy.ViewModels
+namespace KPO_Cursovoy.ViewModels;
+
+public class BuildPcViewModel : BaseViewModel
 {
-    public class BuildPcViewModel : BaseViewModel
+    private readonly INavigationService _navigationService;
+    private readonly DatabaseService _databaseService;
+    private readonly CartService _cartService;
+    private readonly CompatibilityService _compatibilityService;
+
+    public string CurrentSection => "Build";
+
+    public ObservableCollection<ComponentCategory> Categories { get; } = new();
+    public ObservableCollection<ComponentItem> AvailableComponents { get; } = new();
+    public ObservableCollection<ComponentItem> SelectedComponents { get; } = new();
+
+    private ComponentCategory? _selectedCategory;
+    public ComponentCategory? SelectedCategory
     {
-        private readonly INavigationService _navigationService;
-        private readonly DatabaseService _databaseService;
-        private readonly CartService _cartService;
-        private readonly CompatibilityService _compatibilityService;
-
-        public string CurrentSection => "Build";
-
-        public ObservableCollection<ComponentCategory> Categories { get; } = new();
-        public ObservableCollection<ComponentItem> AvailableComponents { get; } = new();
-        public ObservableCollection<ComponentItem> SelectedComponents { get; } = new();
-
-        private ComponentCategory? _selectedCategory;
-        public ComponentCategory? SelectedCategory
+        get => _selectedCategory;
+        set
         {
-            get => _selectedCategory;
-            set
-            {
-                SetProperty(ref _selectedCategory, value);
-                IsComponentSelectionVisible = value != null;
-                if (value != null)
-                    _ = LoadAvailableComponentsAsync();
-                else
-                    AvailableComponents.Clear();
-            }
-        }
-
-        private ComponentItem? _selectedAvailableComponent;
-        public ComponentItem? SelectedAvailableComponent
-        {
-            get => _selectedAvailableComponent;
-            set => SetProperty(ref _selectedAvailableComponent, value);
-        }
-
-        private bool _isComponentSelectionVisible;
-        public bool IsComponentSelectionVisible
-        {
-            get => _isComponentSelectionVisible;
-            set => SetProperty(ref _isComponentSelectionVisible, value);
-        }
-
-        private string _compatibilityStatus = "Не проверено";
-        public string CompatibilityStatus
-        {
-            get => _compatibilityStatus;
-            set => SetProperty(ref _compatibilityStatus, value);
-        }
-
-        private string _compatibilityResult = "Выберите компоненты для проверки";
-        public string CompatibilityResult
-        {
-            get => _compatibilityResult;
-            set => SetProperty(ref _compatibilityResult, value);
-        }
-
-        private Color _compatibilityResultColor = Colors.Gray;
-        public Color CompatibilityResultColor
-        {
-            get => _compatibilityResultColor;
-            set => SetProperty(ref _compatibilityResultColor, value);
-        }
-
-        private bool _isCompatible;
-        public bool IsCompatible
-        {
-            get => _isCompatible;
-            set => SetProperty(ref _isCompatible, value);
-        }
-
-        private bool _isCompatibilityResultVisible;
-        public bool IsCompatibilityResultVisible
-        {
-            get => _isCompatibilityResultVisible;
-            set => SetProperty(ref _isCompatibilityResultVisible, value);
-        }
-
-        public decimal TotalPrice => SelectedComponents.Sum(c => c.Price);
-
-        public ICommand LoadCategoriesCommand { get; }
-        public ICommand SelectComponentCommand { get; }
-        public ICommand RemoveComponentCommand { get; }
-        public ICommand CheckCompatibilityCommand { get; }
-        public ICommand AddToCartCommand { get; }
-        public ICommand RefreshCommand { get; }
-        public ICommand NavigateToCatalogCommand { get; }
-        public ICommand NavigateToBuildPcCommand { get; }
-        public ICommand NavigateToCartCommand { get; }
-        public ICommand NavigateToOrdersCommand { get; }
-        public ICommand NavigateToProfileCommand { get; }
-
-        public BuildPcViewModel(
-            INavigationService navigationService,
-            DatabaseService databaseService,
-            CartService cartService,
-            CompatibilityService compatibilityService)
-        {
-            _navigationService = navigationService;
-            _databaseService = databaseService;
-            _cartService = cartService;
-            _compatibilityService = compatibilityService;
-
-            LoadCategoriesCommand = new AsyncCommand(LoadCategoriesAsync);
-            SelectComponentCommand = new Command<ComponentItem>(SelectComponent);
-            RemoveComponentCommand = new Command<ComponentItem>(RemoveComponent);
-            CheckCompatibilityCommand = new AsyncCommand(CheckCompatibilityAsync);
-            AddToCartCommand = new Command(AddToCart);
-            RefreshCommand = new AsyncCommand(RefreshAsync);
-
-            SelectedComponents.CollectionChanged += (s, e) =>
-            {
-                OnPropertyChanged(nameof(TotalPrice));
-                IsCompatibilityResultVisible = SelectedComponents.Count > 1;
-            };
-
-            NavigateToCatalogCommand = new Command(async () =>
-                await _navigationService.NavigateToAsync(Routes.MainPage));
-            NavigateToBuildPcCommand = new Command(async () =>
-                await _navigationService.NavigateToAsync(Routes.BuildPcPage));
-            NavigateToCartCommand = new Command(async () =>
-                await _navigationService.NavigateToAsync(Routes.CartPage));
-            NavigateToOrdersCommand = new Command(async () =>
-                await _navigationService.NavigateToAsync(Routes.OrdersPage));
-            NavigateToProfileCommand = new Command(async () =>
-                await _navigationService.NavigateToAsync(Routes.ProfilePage));
-        }
-
-        private bool _categoriesLoaded;
-
-        private async Task LoadCategoriesAsync()
-        {
-            if (_categoriesLoaded)
+            if (!SetProperty(ref _selectedCategory, value))
                 return;
 
-            try
-            {
-                IsBusy = true;
-                Categories.Clear();
+            IsComponentSelectionVisible = value != null;
 
-                var categories = await _databaseService.GetComponentCategoriesAsync();
-
-                foreach (var category in categories
-                             .GroupBy(c => c.CategoryCode)
-                             .Select(g => g.First()))
-                {
-                    Categories.Add(category);
-                }
-                _categoriesLoaded = true;
-            }
-            finally
-            {
-                IsBusy = false;
-            }
-        }
-
-        private async Task LoadAvailableComponentsAsync()
-        {
-            if (_selectedCategory == null || string.IsNullOrWhiteSpace(_selectedCategory.CategoryCode))
-            {
+            if (value != null)
+                _ = LoadAvailableComponentsAsync();
+            else
                 AvailableComponents.Clear();
-                return;
+        }
+    }
+
+    private ComponentItem? _selectedAvailableComponent;
+    public ComponentItem? SelectedAvailableComponent
+    {
+        get => _selectedAvailableComponent;
+        set => SetProperty(ref _selectedAvailableComponent, value);
+    }
+
+    private bool _isComponentSelectionVisible;
+    public bool IsComponentSelectionVisible
+    {
+        get => _isComponentSelectionVisible;
+        set => SetProperty(ref _isComponentSelectionVisible, value);
+    }
+
+    private string _compatibilityStatus = "Не проверено";
+    public string CompatibilityStatus
+    {
+        get => _compatibilityStatus;
+        set => SetProperty(ref _compatibilityStatus, value);
+    }
+
+    private string _compatibilityResult = "Выберите компоненты для проверки";
+    public string CompatibilityResult
+    {
+        get => _compatibilityResult;
+        set => SetProperty(ref _compatibilityResult, value);
+    }
+
+    private Color _compatibilityResultColor = Colors.Gray;
+    public Color CompatibilityResultColor
+    {
+        get => _compatibilityResultColor;
+        set => SetProperty(ref _compatibilityResultColor, value);
+    }
+
+    private bool _isCompatible;
+    public bool IsCompatible
+    {
+        get => _isCompatible;
+        set => SetProperty(ref _isCompatible, value);
+    }
+
+    private bool _isCompatibilityResultVisible;
+    public bool IsCompatibilityResultVisible
+    {
+        get => _isCompatibilityResultVisible;
+        set => SetProperty(ref _isCompatibilityResultVisible, value);
+    }
+
+    public decimal TotalPrice => SelectedComponents.Sum(c => c.Price);
+
+    public ICommand LoadCategoriesCommand { get; }
+    public ICommand SelectComponentCommand { get; }
+    public ICommand RemoveComponentCommand { get; }
+    public ICommand CheckCompatibilityCommand { get; }
+    public ICommand AddToCartCommand { get; }
+    public ICommand RefreshCommand { get; }
+
+    public ICommand NavigateToCatalogCommand { get; }
+    public ICommand NavigateToBuildPcCommand { get; }
+    public ICommand NavigateToCartCommand { get; }
+    public ICommand NavigateToOrdersCommand { get; }
+    public ICommand NavigateToProfileCommand { get; }
+
+    private bool _categoriesLoaded;
+    private bool _isLoadingCategories;
+
+    public BuildPcViewModel(
+        INavigationService navigationService,
+        DatabaseService databaseService,
+        CartService cartService,
+        CompatibilityService compatibilityService)
+    {
+        _navigationService = navigationService;
+        _databaseService = databaseService;
+        _cartService = cartService;
+        _compatibilityService = compatibilityService;
+
+        LoadCategoriesCommand = new AsyncCommand(LoadCategoriesAsync);
+        SelectComponentCommand = new Command<ComponentItem?>(SelectComponent);
+        RemoveComponentCommand = new Command<ComponentItem?>(RemoveComponent);
+        CheckCompatibilityCommand = new AsyncCommand(CheckCompatibilityAsync);
+        AddToCartCommand = new Command(AddToCart);
+        RefreshCommand = new AsyncCommand(RefreshAsync);
+
+        SelectedComponents.CollectionChanged += (_, __) =>
+        {
+            OnPropertyChanged(nameof(TotalPrice));
+            IsCompatibilityResultVisible = SelectedComponents.Count > 1;
+        };
+
+        NavigateToCatalogCommand = new Command(async () => await _navigationService.NavigateToAsync(Routes.MainPage));
+        NavigateToBuildPcCommand = new Command(async () => await _navigationService.NavigateToAsync(Routes.BuildPcPage));
+        NavigateToCartCommand = new Command(async () => await _navigationService.NavigateToAsync(Routes.CartPage));
+        NavigateToOrdersCommand = new Command(async () => await _navigationService.NavigateToAsync(Routes.OrdersPage));
+        NavigateToProfileCommand = new Command(async () => await _navigationService.NavigateToAsync(Routes.ProfilePage));
+    }
+
+    private async Task LoadCategoriesAsync()
+    {
+        if (_isLoadingCategories) return;
+        if (_categoriesLoaded) return;
+
+        try
+        {
+            _isLoadingCategories = true;
+            IsBusy = true;
+
+            // На время обновления сбрасываем выбор, чтобы Picker не держал “старый” объект
+            SelectedCategory = null;
+
+            Categories.Clear();
+            var categories = await _databaseService.GetComponentCategoriesAsync();
+
+            foreach (var category in categories
+                         .Where(c => !string.IsNullOrWhiteSpace(c.CategoryCode))
+                         .GroupBy(c => c.CategoryCode.Trim().ToUpperInvariant())
+                         .Select(g => g.First()))
+            {
+                if (string.IsNullOrWhiteSpace(category.CategoryName))
+                    category.CategoryName = category.CategoryCode;
+
+                Categories.Add(category);
             }
 
-            try
-            {
-                IsBusy = true;
-                AvailableComponents.Clear();
+            _categoriesLoaded = true;
+        }
+        finally
+        {
+            IsBusy = false;
+            _isLoadingCategories = false;
+        }
+    }
 
-                var components = await _databaseService
-                    .GetComponentsByCategoryAsync(_selectedCategory.CategoryCode);
-
-                foreach (var component in components)
-                    AvailableComponents.Add(component);
-            }
-            catch (Exception ex)
-            {
-                await Application.Current.MainPage.DisplayAlert(
-                    "Ошибка",
-                    $"Не удалось загрузить компоненты для категории '{_selectedCategory?.CategoryCode ?? "null"}': {ex.Message}",
-                    "ОК");
-            }
-            finally
-            {
-                IsBusy = false;
-            }
+    private async Task LoadAvailableComponentsAsync()
+    {
+        if (_selectedCategory == null || string.IsNullOrWhiteSpace(_selectedCategory.CategoryCode))
+        {
+            AvailableComponents.Clear();
+            return;
         }
 
-        private void SelectComponent(ComponentItem component)
+        try
         {
-            if (component == null) return;
+            IsBusy = true;
+            AvailableComponents.Clear();
 
-            var existing = SelectedComponents.FirstOrDefault(c => c.CategoryCode == component.CategoryCode);
-            if (existing != null)
-                SelectedComponents.Remove(existing);
+            var components = await _databaseService.GetComponentsByCategoryAsync(_selectedCategory.CategoryCode);
+            foreach (var component in components)
+                AvailableComponents.Add(component);
+        }
+        catch (Exception ex)
+        {
+            await Application.Current.MainPage.DisplayAlert(
+                "Ошибка",
+                $"Не удалось загрузить компоненты для категории '{_selectedCategory?.CategoryCode ?? "null"}': {ex.Message}",
+                "ОК");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
 
-            SelectedComponents.Add(component);
-            CompatibilityStatus = "Не проверено";
+    private void SelectComponent(ComponentItem? component)
+    {
+        if (component == null) return;
 
-            // Сброс выбранного компонента для повторного выбора
-            SelectedAvailableComponent = null;
+        var existing = SelectedComponents.FirstOrDefault(c => c.CategoryCode == component.CategoryCode);
+        if (existing != null)
+            SelectedComponents.Remove(existing);
+
+        SelectedComponents.Add(component);
+
+        CompatibilityStatus = "Не проверено";
+        IsCompatible = false;
+        IsCompatibilityResultVisible = SelectedComponents.Count > 1;
+
+        // Сброс выбранного компонента для повторного выбора в списке
+        SelectedAvailableComponent = null;
+    }
+
+    private void RemoveComponent(ComponentItem? component)
+    {
+        if (component == null) return;
+
+        SelectedComponents.Remove(component);
+
+        CompatibilityStatus = "Не проверено";
+        IsCompatible = false;
+        IsCompatibilityResultVisible = SelectedComponents.Count > 1;
+    }
+
+    private async Task CheckCompatibilityAsync()
+    {
+        if (SelectedComponents.Count < 2)
+        {
+            await Application.Current.MainPage.DisplayAlert(
+                "Проверка совместимости",
+                "Выберите минимум 2 компонента для проверки",
+                "ОК");
+            return;
         }
 
-        private void RemoveComponent(ComponentItem component)
+        try
         {
-            if (component == null) return;
-            SelectedComponents.Remove(component);
-            CompatibilityStatus = "Не проверено";
-        }
+            IsBusy = true;
 
-        private async Task CheckCompatibilityAsync()
-        {
-            if (SelectedComponents.Count < 2)
+            var result = await _compatibilityService.CheckCompatibilityAsync(SelectedComponents.ToList());
+
+            if (result.IsCompatible)
             {
-                await Application.Current.MainPage.DisplayAlert("Проверка совместимости",
-                    "Выберите минимум 2 компонента для проверки", "ОК");
-                return;
+                CompatibilityResult = "Все компоненты совместимы!";
+                CompatibilityResultColor = Colors.Green;
+                CompatibilityStatus = "Совместимо";
+                IsCompatible = true;
             }
-
-            try
+            else
             {
-                IsBusy = true;
-                var result = await _compatibilityService.CheckCompatibilityAsync(SelectedComponents.ToList());
+                var reasons = string.Join("\n", result.IncompatiblePairs.Select(p =>
+                    $"- {p.Component1} и {p.Component2}: {p.Reason}"));
 
-                if (result.IsCompatible)
-                {
-                    CompatibilityResult = "Все компоненты совместимы!";
-                    CompatibilityResultColor = Colors.Green;
-                    CompatibilityStatus = "Совместимо";
-                    IsCompatible = true;
-                }
-                else
-                {
-                    var reasons = string.Join("\n", result.IncompatiblePairs.Select(p =>
-                        $"- {p.Component1} и {p.Component2}: {p.Reason}"));
-
-                    CompatibilityResult = $"Несовместимые компоненты:\n{reasons}";
-                    CompatibilityResultColor = Colors.Red;
-                    CompatibilityStatus = "Несовместимо";
-                    IsCompatible = false;
-                }
-            }
-            catch (Exception ex)
-            {
-                await Application.Current.MainPage.DisplayAlert("Ошибка",
-                    $"Не удалось проверить совместимость: {ex.Message}", "ОК");
-                CompatibilityResult = "Ошибка при проверке совместимости";
+                CompatibilityResult = $"Несовместимые компоненты:\n{reasons}";
                 CompatibilityResultColor = Colors.Red;
-                CompatibilityStatus = "Ошибка";
+                CompatibilityStatus = "Несовместимо";
                 IsCompatible = false;
             }
-            finally
-            {
-                IsBusy = false;
-                IsCompatibilityResultVisible = true;
-            }
         }
-
-        private void AddToCart()
+        catch (Exception ex)
         {
-            if (!IsCompatible)
-            {
-                Application.Current.MainPage.DisplayAlert("Ошибка",
-                    "Невозможно добавить в корзину: есть несовместимые компоненты", "ОК");
-                return;
-            }
+            await Application.Current.MainPage.DisplayAlert(
+                "Ошибка",
+                $"Не удалось проверить совместимость: {ex.Message}",
+                "ОК");
 
-            if (SelectedComponents.Count == 0)
-            {
-                Application.Current.MainPage.DisplayAlert("Корзина",
-                    "Выберите компоненты для сборки ПК", "ОК");
-                return;
-            }
-
-            var customPc = new PcItem
-            {
-                Name = $"Собранный ПК ({DateTime.Now:dd.MM.yyyy})",
-                Description = "Собран по вашему заказу",
-                Price = TotalPrice,
-                Components = new List<ComponentItem>(SelectedComponents)
-            };
-
-            var cartItem = new CartItem
-            {
-                Pc = customPc,
-                Quantity = 1,
-                IsCustomBuild = true
-            };
-
-            _cartService.AddItem(cartItem);
-
-            Application.Current.MainPage.DisplayAlert("Корзина",
-                "Собранный ПК добавлен в корзину", "ОК");
+            CompatibilityResult = "Ошибка при проверке совместимости";
+            CompatibilityResultColor = Colors.Red;
+            CompatibilityStatus = "Ошибка";
+            IsCompatible = false;
         }
-
-
-        private async Task RefreshAsync()
+        finally
         {
-            await LoadCategoriesAsync();
+            IsBusy = false;
+            IsCompatibilityResultVisible = true;
+        }
+    }
+
+    private void AddToCart()
+    {
+        if (!IsCompatible)
+        {
+            Application.Current.MainPage.DisplayAlert(
+                "Ошибка",
+                "Невозможно добавить в корзину: есть несовместимые компоненты",
+                "ОК");
+            return;
         }
 
-        public async Task InitializeAsync()
+        if (SelectedComponents.Count == 0)
         {
-            await LoadCategoriesAsync();
+            Application.Current.MainPage.DisplayAlert(
+                "Корзина",
+                "Выберите компоненты для сборки ПК",
+                "ОК");
+            return;
         }
+
+        var customPc = new PcItem
+        {
+            Name = $"Собранный ПК ({DateTime.Now:dd.MM.yyyy})",
+            Description = "Собран по вашему заказу",
+            Price = TotalPrice,
+            Components = new List<ComponentItem>(SelectedComponents)
+        };
+
+        var cartItem = new CartItem
+        {
+            Pc = customPc,
+            Quantity = 1,
+            IsCustomBuild = true
+        };
+
+        _cartService.AddItem(cartItem);
+
+        Application.Current.MainPage.DisplayAlert(
+            "Корзина",
+            "Собранный ПК добавлен в корзину",
+            "ОК");
+    }
+
+    private async Task RefreshAsync()
+    {
+        _categoriesLoaded = false;
+        await LoadCategoriesAsync();
+    }
+
+    public async Task InitializeAsync()
+    {
+        await LoadCategoriesAsync();
     }
 }

@@ -7,14 +7,14 @@
 
     <ScrollView>
         <VerticalStackLayout Padding="30" Spacing="20" VerticalOptions="CenterAndExpand">
-            <Label Text="Регистрация" 
-                   FontSize="32" 
-                   FontAttributes="Bold" 
-                   TextColor="White" 
+            <Label Text="Регистрация"
+                   FontSize="32"
+                   FontAttributes="Bold"
+                   TextColor="White"
                    HorizontalOptions="Center"/>
 
-            <Label Text="Заполните данные для создания аккаунта" 
-                   TextColor="#9CA3AF" 
+            <Label Text="Заполните данные для создания аккаунта"
+                   TextColor="#9CA3AF"
                    HorizontalOptions="Center"
                    Margin="0,0,0,20"/>
 
@@ -23,69 +23,70 @@
                     BackgroundColor="#0F172A"
                     Padding="10"
                     StrokeShape="RoundRectangle 12">
-                        <VerticalStackLayout Spacing="10">
-                           <Label Text="Логин" TextColor="#9CA3AF" FontSize="14"/>
-                           <Entry Text="{Binding Login}"
-                           Placeholder="Введите логин"
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Логин" TextColor="#9CA3AF" FontSize="14"/>
+                    <Entry Text="{Binding Login}"
+                           Placeholder="Введите логин (например: ivan)"
                            TextColor="White"
                            FontSize="18"
                            Margin="0,5,0,0"/>
-                        </VerticalStackLayout>
+                </VerticalStackLayout>
             </Border>
-            <Border Stroke="#3B82F6" 
-                    StrokeThickness="2" 
-                    BackgroundColor="#0F172A" 
-                    Padding="10" 
-                    StrokeShape="RoundRectangle 12" 
+
+            <Border Stroke="#3B82F6"
+                    StrokeThickness="2"
+                    BackgroundColor="#0F172A"
+                    Padding="10"
+                    StrokeShape="RoundRectangle 12"
                     Margin="0,10,0,0">
                 <VerticalStackLayout Spacing="10">
                     <Label Text="Номер телефона" TextColor="#9CA3AF" FontSize="14"/>
-                    <Entry Text="{Binding Phone}" 
-                           Keyboard="Telephone" 
-                           Placeholder="+7 (999) 000-00-00" 
+                    <Entry Text="{Binding Phone}"
+                           Keyboard="Telephone"
+                           Placeholder="+7 (999) 000-00-00 (11 цифр)"
                            TextColor="White"
                            FontSize="18"
                            Margin="0,5,0,0"/>
                 </VerticalStackLayout>
             </Border>
 
-            <Border Stroke="#3B82F6" 
-                    StrokeThickness="2" 
-                    BackgroundColor="#0F172A" 
-                    Padding="10" 
-                    StrokeShape="RoundRectangle 12" 
+            <Border Stroke="#3B82F6"
+                    StrokeThickness="2"
+                    BackgroundColor="#0F172A"
+                    Padding="10"
+                    StrokeShape="RoundRectangle 12"
                     Margin="0,10,0,0">
                 <VerticalStackLayout Spacing="10">
                     <Label Text="Пароль" TextColor="#9CA3AF" FontSize="14"/>
-                    <Entry Text="{Binding Password}" 
-                           IsPassword="True" 
-                           Placeholder="******" 
+                    <Entry Text="{Binding Password}"
+                           IsPassword="True"
+                           Placeholder="******"
                            TextColor="White"
                            FontSize="18"
                            Margin="0,5,0,0"/>
                 </VerticalStackLayout>
             </Border>
 
-            <Button Text="Зарегистрироваться" 
+            <Button Text="Зарегистрироваться"
                     Command="{Binding RegisterCommand}"
                     IsEnabled="{Binding IsNotBusy}"
-                    BackgroundColor="#10B981" 
-                    TextColor="White" 
-                    CornerRadius="12" 
+                    BackgroundColor="#10B981"
+                    TextColor="White"
+                    CornerRadius="12"
                     FontSize="18"
                     HeightRequest="55"
                     Margin="0,20,0,0"/>
 
-            <ActivityIndicator IsVisible="{Binding IsBusy}" 
-                               IsRunning="{Binding IsBusy}" 
-                               Color="#3B82F6" 
-                               VerticalOptions="Center" 
+            <ActivityIndicator IsVisible="{Binding IsBusy}"
+                               IsRunning="{Binding IsBusy}"
+                               Color="#3B82F6"
+                               VerticalOptions="Center"
                                HorizontalOptions="Center"/>
 
-            <Button Text="Назад" 
-                    Command="{Binding BackCommand}" 
-                    BackgroundColor="Transparent" 
-                    TextColor="#9CA3AF" 
+            <Button Text="Назад"
+                    Command="{Binding BackCommand}"
+                    BackgroundColor="Transparent"
+                    TextColor="#9CA3AF"
                     FontSize="16"
                     Margin="0,20,0,0"/>
         </VerticalStackLayout>

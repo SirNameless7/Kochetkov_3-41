@@ -1,0 +1,100 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="KPO_Cursovoy.Views.PaymentPopupPage"
+             BackgroundColor="#80000000">
+
+    <Grid Padding="20">
+        <Frame VerticalOptions="Center"
+               HorizontalOptions="Center"
+               WidthRequest="340"
+               Padding="16"
+               CornerRadius="14"
+               BackgroundColor="#0B1220"
+               BorderColor="#334155">
+
+            <VerticalStackLayout Spacing="12">
+                <Label Text="Оплата заказа"
+                       FontSize="18"
+                       TextColor="White"
+                       FontAttributes="Bold"/>
+
+                <Label x:Name="OrderInfoLabel"
+                       TextColor="#CBD5E1"
+                       FontSize="14"/>
+
+                <!-- 16 цифр + 3 пробела = 19 символов -->
+                <Entry x:Name="CardNumberEntry"
+                       Placeholder="Номер карты (1111 1111 1111 1111)"
+                       Keyboard="Numeric"
+                       TextColor="White"
+                       PlaceholderColor="#64748B"
+                       MaxLength="19"
+                       TextChanged="OnCardNumberTextChanged"
+                       Completed="OnCardNumberCompleted"/>
+
+                <Grid ColumnDefinitions="*,*"
+                      ColumnSpacing="10">
+
+                    <!-- MM/YY = 5 символов -->
+                    <Entry x:Name="ExpiryEntry"
+                           Grid.Column="0"
+                           Placeholder="MM/YY"
+                           Keyboard="Numeric"
+                           TextColor="White"
+                           PlaceholderColor="#64748B"
+                           MaxLength="5"
+                           TextChanged="OnExpiryTextChanged"
+                           Completed="OnExpiryCompleted"/>
+
+                    <Entry x:Name="CvcEntry"
+                           Grid.Column="1"
+                           Placeholder="CVC"
+                           Keyboard="Numeric"
+                           IsPassword="True"
+                           TextColor="White"
+                           PlaceholderColor="#64748B"
+                           MaxLength="3"
+                           TextChanged="OnCvcTextChanged"
+                           Completed="OnCvcCompleted"/>
+                </Grid>
+
+                <Entry x:Name="HolderEntry"
+                       Placeholder="Имя держателя"
+                       Keyboard="Text"
+                       TextColor="White"
+                       PlaceholderColor="#64748B"
+                       Completed="OnHolderCompleted"/>
+
+                <Label x:Name="ErrorLabel"
+                       TextColor="#FCA5A5"
+                       FontSize="13"
+                       IsVisible="False"/>
+
+                <Grid ColumnDefinitions="*,*"
+                      ColumnSpacing="10"
+                      Margin="0,6,0,0">
+                    <Button Grid.Column="0"
+                            Text="Оплатить"
+                            Clicked="OnPayClicked"
+                            BackgroundColor="#10B981"
+                            TextColor="White"
+                            CornerRadius="10" />
+                    <Button Grid.Column="1"
+                            Text="Закрыть"
+                            Clicked="OnCloseClicked"
+                            BackgroundColor="#334155"
+                            TextColor="White"
+                            CornerRadius="10" />
+                </Grid>
+
+                <Button Text="Отменить заказ"
+                        Clicked="OnCancelOrderClicked"
+                        BackgroundColor="#EF4444"
+                        TextColor="White"
+                        CornerRadius="10" />
+            </VerticalStackLayout>
+
+        </Frame>
+    </Grid>
+</ContentPage>

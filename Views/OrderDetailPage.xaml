@@ -7,66 +7,100 @@
 
     <ScrollView>
         <VerticalStackLayout Padding="15" Spacing="20">
+
             <!-- Основная информация о заказе -->
             <Frame Padding="15" BackgroundColor="#BFDBFE" BorderColor="#3B82F6" CornerRadius="12">
                 <Grid ColumnDefinitions="*" RowDefinitions="Auto,Auto,Auto,Auto">
-                    <Label Text="{Binding Order.Id, StringFormat='Заказ №{0}'}" 
-                           FontSize="24" 
-                           FontAttributes="Bold" 
+                    <Label Text="{Binding Order.Id, StringFormat='Заказ №{0}'}"
+                           FontSize="24"
+                           FontAttributes="Bold"
                            TextColor="#1E3A8A"/>
-                    <Label Text="{Binding Order.OrderDate, StringFormat='Дата: {0:d}'}" 
-                           Grid.Row="1" 
+
+                    <Label Text="{Binding Order.OrderDate, StringFormat='Дата: {0:d}'}"
+                           Grid.Row="1"
                            TextColor="#334155"/>
-                    <Label Text="{Binding Order.Status, Converter={StaticResource OrderStatusToTextConverter}}" 
-                           TextColor="{Binding Order.Status, Converter={StaticResource OrderStatusToColorConverter}}" 
-                           FontAttributes="Bold" 
-                           FontSize="18" 
+
+                    <Label Text="{Binding Order.Status, Converter={StaticResource OrderStatusToTextConverter}}"
+                           TextColor="{Binding Order.Status, Converter={StaticResource OrderStatusToColorConverter}}"
+                           FontAttributes="Bold"
+                           FontSize="18"
                            Grid.Row="2"/>
-                    <Label Text="{Binding Order.TotalAmount, StringFormat='Итоговая сумма: ₽{0:F2}'}" 
-                           FontSize="20" 
-                           FontAttributes="Bold" 
-                           TextColor="#10B981" 
+
+                    <Label Text="{Binding Order.TotalAmount, StringFormat='Итоговая сумма: ₽{0:F2}'}"
+                           FontSize="20"
+                           FontAttributes="Bold"
+                           TextColor="#10B981"
                            Grid.Row="3"
                            Margin="0,10,0,0"/>
                 </Grid>
             </Frame>
 
-            <!-- Состав заказа -->
+            <!-- Состав заказа (комплектующие) -->
             <Frame Padding="15" BorderColor="#E2E8F0" CornerRadius="12">
                 <VerticalStackLayout Spacing="10">
                     <Label Text="Состав заказа" FontSize="18" FontAttributes="Bold" />
+
                     <CollectionView ItemsSource="{Binding OrderItems}" SelectionMode="None">
                         <CollectionView.ItemTemplate>
                             <DataTemplate>
-                                <Grid ColumnDefinitions="*" RowDefinitions="Auto,Auto,Auto" Padding="0,10">
-                                    <Label Text="{Binding Component.Name}" 
-                               FontSize="16" FontAttributes="Bold" />
-                                    <Label Text="{Binding Component.CategoryCode}" 
-                               TextColor="#64748B" Grid.Row="1" />
-                                    <Label Text="{Binding Component.Price, StringFormat='₽{0:F2}'}"
-                               TextColor="#10B981" FontAttributes="Bold" Grid.Row="2" />
+                                <Grid ColumnDefinitions="*,Auto"
+                                      RowDefinitions="Auto,Auto,Auto"
+                                      Padding="0,10"
+                                      ColumnSpacing="10">
+
+                                    <!-- Название -->
+                                    <Label Text="{Binding Name}"
+                                           FontSize="16"
+                                           FontAttributes="Bold" />
+
+                                    <!-- Сумма за позицию -->
+                                    <Label Grid.Column="1"
+                                           Text="{Binding LineTotal, StringFormat='₽{0:F2}'}"
+                                           TextColor="#10B981"
+                                           FontAttributes="Bold"
+                                           HorizontalTextAlignment="End" />
+
+                                    <!-- Категория -->
+                                    <Label Grid.Row="1"
+                                           Text="{Binding CategoryCode}"
+                                           TextColor="#64748B" />
+
+                                    <!-- Цена -->
+                                    <Label Grid.Row="2"
+                                           Text="{Binding Price, StringFormat='₽{0:F2}'}"
+                                           TextColor="#64748B" />
+
+                                    <!-- Кол-во -->
+                                    <Label Grid.Row="2"
+                                           Grid.Column="1"
+                                           Text="{Binding Quantity, StringFormat='x{0}'}"
+                                           TextColor="#64748B"
+                                           HorizontalTextAlignment="End" />
                                 </Grid>
                             </DataTemplate>
                         </CollectionView.ItemTemplate>
                     </CollectionView>
                 </VerticalStackLayout>
             </Frame>
-
 
             <!-- Дополнительные услуги -->
             <Frame Padding="15" BorderColor="#E2E8F0" CornerRadius="12" IsVisible="{Binding HasServices}">
                 <VerticalStackLayout Spacing="10">
                     <Label Text="Дополнительные услуги" FontSize="18" FontAttributes="Bold"/>
+
                     <CollectionView ItemsSource="{Binding Services}" SelectionMode="None">
                         <CollectionView.ItemTemplate>
                             <DataTemplate>
-                                <Grid ColumnDefinitions="*" RowDefinitions="Auto,Auto,Auto" Padding="0,10">
-                                    <Label Text="{Binding Service.Name}" FontSize="16" FontAttributes="Bold"/>
-                                    <Label Text="{Binding Service.Description}" TextColor="#64748B" Grid.Row="1"/>
-                                    <Label Text="{Binding Service.Price, StringFormat='₽{0:F2}'}" 
+                                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" Padding="0,10" ColumnSpacing="10">
+                                    <Label Text="{Binding Name}" FontSize="16" FontAttributes="Bold"/>
+                                    <Label Grid.Column="1"
+                                           Text="{Binding Price, StringFormat='₽{0:F2}'}"
                                            TextColor="#10B981"
                                            FontAttributes="Bold"
-                                           Grid.Row="2"/>
+                                           HorizontalTextAlignment="End"/>
+                                    <Label Grid.Row="1"
+                                           Text="{Binding Description}"
+                                           TextColor="#64748B"/>
                                 </Grid>
                             </DataTemplate>
                         </CollectionView.ItemTemplate>
@@ -74,17 +108,20 @@
                 </VerticalStackLayout>
             </Frame>
 
-            <!-- Оплата -->
-            <Frame Padding="15" BackgroundColor="#F0FDF4" BorderColor="#10B981" CornerRadius="12" IsVisible="{Binding IsPaymentSectionVisible}">
+            <!-- Оплата (без выбора способа) -->
+            <Frame Padding="15"
+                   BackgroundColor="#F0FDF4"
+                   BorderColor="#10B981"
+                   CornerRadius="12"
+                   IsVisible="{Binding IsPaymentSectionVisible}">
                 <VerticalStackLayout Spacing="15">
                     <Label Text="Оплата" FontSize="18" FontAttributes="Bold" TextColor="#065F46"/>
-                    <Picker ItemsSource="{Binding PaymentMethods}" SelectedItem="{Binding SelectedPaymentMethod}" Title="Способ оплаты"/>
-                    <Picker ItemsSource="{Binding PaymentTypes}" SelectedItem="{Binding SelectedPaymentType}" Title="Тип оплаты"/>
-                    <Button Text="Оплатить заказ" 
+
+                    <Button Text="Оплатить заказ"
                             Command="{Binding PayOrderCommand}"
-                            BackgroundColor="#10B981" 
-                            TextColor="White" 
-                            CornerRadius="12" 
+                            BackgroundColor="#10B981"
+                            TextColor="White"
+                            CornerRadius="12"
                             FontSize="16"
                             HeightRequest="50"
                             Margin="0,10,0,0"/>
@@ -113,21 +150,23 @@
 
             <!-- Кнопки -->
             <HorizontalStackLayout Spacing="10" Margin="0,10,0,0">
-                <Button Text="Отменить заказ" 
+                <Button Text="Отменить заказ"
                         Command="{Binding CancelOrderCommand}"
                         IsVisible="{Binding CanCancelOrder}"
-                        BackgroundColor="#EF4444" 
-                        TextColor="White" 
-                        CornerRadius="12" 
+                        BackgroundColor="#EF4444"
+                        TextColor="White"
+                        CornerRadius="12"
                         FontAttributes="Bold"
                         HorizontalOptions="FillAndExpand"/>
-                <Button Text="Вернуться" 
+
+                <Button Text="Вернуться"
                         Command="{Binding BackCommand}"
-                        BackgroundColor="#94A3B8" 
-                        TextColor="White" 
-                        CornerRadius="12" 
+                        BackgroundColor="#94A3B8"
+                        TextColor="White"
+                        CornerRadius="12"
                         HorizontalOptions="FillAndExpand"/>
             </HorizontalStackLayout>
+
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>

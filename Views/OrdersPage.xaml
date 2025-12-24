@@ -10,46 +10,46 @@
           BackgroundColor="#020617">
 
         <Grid RowDefinitions="Auto,Auto,*"
-      BackgroundColor="#020617">
+              BackgroundColor="#020617">
 
             <Grid Grid.Row="0"
-          ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,*"
-          Padding="16"
-          BackgroundColor="#020617">
+                  ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,*"
+                  Padding="16"
+                  BackgroundColor="#020617">
 
                 <Button Text="Каталог"
-                Command="{Binding NavigateToCatalogCommand}"
-                BackgroundColor="#1F2933"
-                TextColor="#E5E7EB"
-                CornerRadius="10" />
+                        Command="{Binding NavigateToCatalogCommand}"
+                        BackgroundColor="#1F2933"
+                        TextColor="#E5E7EB"
+                        CornerRadius="10" />
 
                 <Button Grid.Column="1"
-                Text="Собрать ПК"
-                Margin="8,0,0,0"
-                Command="{Binding NavigateToBuildPcCommand}"
-                BackgroundColor="#1F2933"
-                TextColor="#E5E7EB"
-                CornerRadius="10" />
+                        Text="Собрать ПК"
+                        Margin="8,0,0,0"
+                        Command="{Binding NavigateToBuildPcCommand}"
+                        BackgroundColor="#1F2933"
+                        TextColor="#E5E7EB"
+                        CornerRadius="10" />
 
                 <Button Grid.Column="2"
-                Text="Корзина"
-                Margin="8,0,0,0"
-                Command="{Binding NavigateToCartCommand}"
-                BackgroundColor="#1F2933"
-                TextColor="#E5E7EB"
-                CornerRadius="10" />
+                        Text="Корзина"
+                        Margin="8,0,0,0"
+                        Command="{Binding NavigateToCartCommand}"
+                        BackgroundColor="#1F2933"
+                        TextColor="#E5E7EB"
+                        CornerRadius="10" />
 
                 <Button Grid.Column="3"
-                Text="Заказы"
-                Margin="8,0,0,0"
-                Command="{Binding NavigateToOrdersCommand}"
-                BackgroundColor="#1F2933"
-                TextColor="#E5E7EB"
-                CornerRadius="10">
+                        Text="Заказы"
+                        Margin="8,0,0,0"
+                        Command="{Binding NavigateToOrdersCommand}"
+                        BackgroundColor="#1F2933"
+                        TextColor="#E5E7EB"
+                        CornerRadius="10">
                     <Button.Triggers>
                         <DataTrigger TargetType="Button"
-                             Binding="{Binding CurrentSection}"
-                             Value="Orders">
+                                     Binding="{Binding CurrentSection}"
+                                     Value="Orders">
                             <Setter Property="IsEnabled" Value="False" />
                             <Setter Property="BackgroundColor" Value="#2563EB" />
                             <Setter Property="TextColor" Value="White" />
@@ -58,14 +58,15 @@
                 </Button>
 
                 <Button Grid.Column="4"
-                Text="Профиль"
-                Margin="8,0,0,0"
-                Command="{Binding NavigateToProfileCommand}"
-                BackgroundColor="#1F2933"
-                TextColor="#E5E7EB"
-                CornerRadius="10" />
+                        Text="Профиль"
+                        Margin="8,0,0,0"
+                        Command="{Binding NavigateToProfileCommand}"
+                        BackgroundColor="#1F2933"
+                        TextColor="#E5E7EB"
+                        CornerRadius="10" />
             </Grid>
         </Grid>
+
         <Picker Grid.Row="1"
                 ItemsSource="{Binding StatusFilterOptions}"
                 SelectedItem="{Binding SelectedStatusFilter}"
@@ -74,8 +75,7 @@
                 BackgroundColor="White" />
 
         <RefreshView Grid.Row="2"
-                     Command="{Binding LoadOrdersCommand}"
-                     IsRefreshing="{Binding IsBusy}">
+                     Command="{Binding LoadOrdersCommand}">
             <CollectionView ItemsSource="{Binding Orders}"
                             SelectionMode="Single">
                 <CollectionView.EmptyView>

@@ -11,10 +11,10 @@
 
             <Border Stroke="#3B82F6" StrokeThickness="2" BackgroundColor="#1E293B" Padding="10" StrokeShape="RoundRectangle 12">
                 <VerticalStackLayout Spacing="10">
-                    <Label Text="Логин" TextColor="#9CA3AF" FontSize="14"/>
-                    <Entry x:Name="LoginEntry" 
-                           Text="{Binding Phone}" 
-                           Placeholder="ivan" 
+                    <Label Text="Логин или телефон" TextColor="#9CA3AF" FontSize="14"/>
+                    <Entry x:Name="LoginEntry"
+                           Text="{Binding Phone}"
+                           Placeholder="ivan или +7 (999) 000-00-00"
                            TextColor="White"
                            FontSize="18"
                            Margin="0,5,0,0"/>
@@ -24,28 +24,28 @@
             <Border Stroke="#3B82F6" StrokeThickness="2" BackgroundColor="#1E293B" Padding="10" StrokeShape="RoundRectangle 12">
                 <VerticalStackLayout Spacing="10">
                     <Label Text="Пароль" TextColor="#9CA3AF" FontSize="14"/>
-                    <Entry x:Name="PasswordEntry" 
-                           Text="{Binding Password}" 
+                    <Entry x:Name="PasswordEntry"
+                           Text="{Binding Password}"
                            IsPassword="True"
-                           Placeholder="12345" 
+                           Placeholder="12345"
                            TextColor="White"
                            FontSize="18"
                            Margin="0,5,0,0"/>
                 </VerticalStackLayout>
             </Border>
 
-            <Label x:Name="ErrorLabel" 
-                   Text="{Binding ErrorMessage}" 
-                   TextColor="#EF4444" 
+            <Label x:Name="ErrorLabel"
+                   Text="{Binding ErrorMessage}"
+                   TextColor="#EF4444"
                    FontSize="14"
                    HorizontalOptions="Center"/>
 
-            <Button Text="Войти" 
+            <Button Text="Войти"
                     Command="{Binding LoginCommand}"
                     IsEnabled="{Binding IsNotBusy}"
-                    BackgroundColor="#10B981" 
-                    TextColor="White" 
-                    CornerRadius="12" 
+                    BackgroundColor="#10B981"
+                    TextColor="White"
+                    CornerRadius="12"
                     FontSize="18"
                     HeightRequest="55"
                     Margin="0,20,0,0"/>

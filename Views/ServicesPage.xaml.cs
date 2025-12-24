@@ -1,23 +1,23 @@
 ﻿using KPO_Cursovoy.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls;
 
-namespace KPO_Cursovoy.Views
+namespace KPO_Cursovoy.Views;
+
+public partial class ServicesPage : ContentPage
 {
-    public partial class ServicesPage : ContentPage
+    public ServicesViewModel ViewModel { get; }
+
+    public ServicesPage()
+        : this(App.ServiceProvider.GetRequiredService<ServicesViewModel>())
     {
-        public ServicesViewModel ViewModel { get; }
+    }
 
-        public ServicesPage(ServicesViewModel viewModel)
-        {
-            InitializeComponent();
-            ViewModel = viewModel;
-            BindingContext = ViewModel;
-        }
+    public ServicesPage(ServicesViewModel viewModel)
+    {
+        InitializeComponent();
 
-        protected override void OnAppearing()
-        {
-            base.OnAppearing();
-            ViewModel?.LoadServicesCommand?.Execute(null);
-        }
+        ViewModel = viewModel;
+        BindingContext = ViewModel;
     }
 }

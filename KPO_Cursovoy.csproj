@@ -80,6 +80,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Compile Update="Views\PaymentPopupPage.xaml.cs">
+	    <DependentUpon>PaymentPopupPage.xaml</DependentUpon>
+	  </Compile>
 	  <Compile Update="Views\ReportsPage.xaml.cs">
 	    <DependentUpon>ReportsPage.xaml</DependentUpon>
 	  </Compile>
@@ -122,6 +125,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <MauiXaml Update="Views\PaymentPopupPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	  <MauiXaml Update="Views\ReportsPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
